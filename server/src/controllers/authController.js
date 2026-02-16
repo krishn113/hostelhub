@@ -1,37 +1,194 @@
 import User from "../models/User.js";
+import Otp from "../models/Otp.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
-export const signup = async (req,res)=>{
-  try{
-    const { name,email,password,year,entryNumber,degreeType,phone } = req.body;
+dotenv.config();
 
-    if(!email.endsWith("@iitrpr.ac.in"))
-      return res.status(400).json({msg:"Only IIT Ropar email allowed"});
+// Configure Nodemailer
+// In production, these should be in .env
+// We'll trust the user has put EMAIL_USER and EMAIL_PASS in .env or will do so.
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
-    const exists = await User.findOne({email});
-    if(exists) return res.status(400).json({msg:"User already exists"});
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("Email transporter error:", error);
+  } else {
+    console.log("Email server is ready to send messages");
+  }
+});
 
-    const hashed = await bcrypt.hash(password,10);
+export const sendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email.endsWith("@iitrpr.ac.in")) {
+      return res.status(400).json({ msg: "Only IIT Ropar email allowed (@iitrpr.ac.in)" });
+    }
 
-    const user = await User.create({
-      name,email,password:hashed,year,entryNumber,degreeType,phone
-    });
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    res.json({msg:"Signup successful"});
-  }catch(err){
-    res.status(500).json({error:err.message});
+    // Save to DB (update if exists or create new)
+    await Otp.findOneAndUpdate(
+      { email },
+      { otp, verified: false, createdAt: Date.now() },
+      { upsert: true, new: true }
+    );
+
+
+    // Send Email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Hostel Management - Your OTP",
+      text: `Your OTP for verification is: ${otp}. It is valid for 5 minutes.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ success: true, msg: "OTP sent successfully" });
+  } catch (err) {
+    console.error("Send OTP Error:", err);
+    res.status(500).json({ error: "Failed to send OTP" });
   }
 };
 
-export const login = async (req,res)=>{
-  const { email,password } = req.body;
-  const user = await User.findOne({email});
-  if(!user) return res.status(400).json({msg:"Invalid credentials"});
+export const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
 
-  const ok = await bcrypt.compare(password,user.password);
-  if(!ok) return res.status(400).json({msg:"Invalid credentials"});
+    const record = await Otp.findOne({ email });
+    if (!record || record.otp !== otp) {
+      return res.status(400).json({ msg: "Invalid or expired OTP" });
+    }
 
-  const token = jwt.sign({id:user._id,role:user.role}, process.env.JWT_SECRET);
-  res.json({ token, role:user.role });
+    record.verified = true;
+    await record.save();
+
+    res.json({ msg: "OTP verified successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "OTP verification failed" });
+  }
 };
+
+export const signup = async (req, res) => {
+  try {
+    const { name, email, password, year, entryNumber, degreeType, phone } = req.body;
+
+    if (!email.endsWith("@iitrpr.ac.in"))
+      return res.status(400).json({ msg: "Only IIT Ropar email allowed" });
+
+    const otpRecord = await Otp.findOne({ email });
+    if (!otpRecord || !otpRecord.verified)
+      return res.status(400).json({ msg: "Email not verified" });
+
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(400).json({ msg: "User already exists" });
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashed,
+      year,
+      entryNumber,
+      degreeType,
+      phone,
+    });
+
+    await Otp.deleteOne({ email });
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({ msg: "Signup successful", token, role: user.role });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) return res.status(400).json({ msg: "Invalid credentials" });
+
+  const ok = await bcrypt.compare(password, user.password);
+  if (!ok) return res.status(400).json({ msg: "Invalid credentials" });
+
+  const token = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+  res.json({ token, role: user.role });
+};
+
+export const forgotPassword = async (req, res) => {
+  // Same as sendOtp but maybe different subject/check if user exists first
+  try {
+    const { email } = req.body;
+    if (!email.endsWith("@iitrpr.ac.in"))
+      return res.status(400).json({ msg: "Invalid email" });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    // Reuse sendOtp logic or call it? For now, implementing customized logic
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    await Otp.findOneAndUpdate(
+      { email },
+      { otp, verified: false, createdAt: Date.now() },
+      { upsert: true, new: true }
+    );
+
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Hostel Management - Password Reset OTP",
+      text: `Your OTP for password reset is: ${otp}. Valid for 5 minutes.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.json({ msg: "OTP sent to email" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    const record = await Otp.findOne({ email });
+    if (!record || record.otp !== otp) {
+      return res.status(400).json({ msg: "Invalid or expired OTP" });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await User.findOneAndUpdate({ email }, { password: hashed });
+    await User.updateOne({ email }, { tokenVersion: Date.now() });
+
+    await Otp.deleteOne({ email }); // cleanup
+
+    res.json({ msg: "Password reset successful" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
