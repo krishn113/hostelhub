@@ -1,10 +1,34 @@
 import mongoose from "mongoose";
 
 const roomSchema = new mongoose.Schema({
-  hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel" },
-  roomNumber: String,
-  capacity: Number,
-  occupiedCount: { type: Number, default: 0 }
-});
+  roomNumber: {
+    type: String,
+    required: true,
+  },
+  hostelId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Hostel",
+    required: true,
+  },
+  // If studentId is null, the room is considered "Empty"
+  studentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null,
+  },
+  type: {
+    type: String,
+    enum: ["Single", "Double", "Triple"],
+    default: "Single",
+  },
+  lastCleaned: {
+    type: Date,
+    default: Date.now,
+  }
+}, { timestamps: true });
 
-export default mongoose.model("Room", roomSchema);
+// Ensure a room number is unique within a specific hostel
+roomSchema.index({ roomNumber: 1, hostelId: 1 }, { unique: true });
+
+const Room = mongoose.model("Room", roomSchema);
+export default Room;

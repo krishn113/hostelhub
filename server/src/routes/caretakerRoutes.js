@@ -1,13 +1,30 @@
 import express from "express";
-import auth from "../middleware/auth.js";
-import permit from "../middleware/roles.js";
-import {
-    downloadStudents
-} from "../controllers/caretakerController.js";
+import multer from "multer";
+import { uploadRooms, downloadStudents, getRoomStats, 
+  getAllStudents } from "../controllers/caretakerController.js";
+import { auth, authorize } from "../middleware/auth.js"; // Assume these exist
 
-router.get("/dashboard", auth, permit("admin"), (req,res)=>{
-  res.json({msg:"Welcome Caretaker"});
+const router = express.Router();
+
+// Memory storage is better for Vercel/Render deployments
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.includes("spreadsheetml") || file.mimetype.includes("excel")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Please upload only Excel files"), false);
+    }
+  }
 });
-router.get("/students-excel", auth, permit("caretaker"), downloadStudents);
-router.post("/upload-rooms", auth, permit("caretaker"), upload.single("file"), uploadRooms);
 
+// Student Management Routes
+router.get("/students", auth, authorize("caretaker"), getAllStudents);
+router.get("/room-stats", auth, authorize("caretaker"), getRoomStats);
+router.get("/download-students", auth, authorize("caretaker"), downloadStudents);
+
+// Handle Excel Upload
+router.post("/upload-rooms", auth, authorize("caretaker"), upload.single("file"), uploadRooms);
+
+export default router;

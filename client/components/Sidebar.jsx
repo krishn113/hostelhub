@@ -1,23 +1,35 @@
-"use client";
-import { useAuth } from "../context/AuthContext";
-
-const menus = {
-  student: ["Profile", "Complaints", "Notices", "Forms"],
-  caretaker: ["Students", "Rooms", "Complaints", "Notices"],
-  warden: ["Complaints", "Notices", "Students"],
-  admin: ["Hostels", "Students", "Wardens", "Caretakers"]
+const navConfig = {
+  caretaker: [
+    { label: "Overview", icon: "📊", href: "/dashboard/caretaker" },
+    { label: "Student List", icon: "👥", href: "/dashboard/caretaker/students" },
+    { label: "Complaints", icon: "🛠️", href: "/dashboard/caretaker/complaints" },
+    { label: "Notices", icon: "📢", href: "/dashboard/caretaker/notices" }, // Changed Label
+  ],
+  warden: [
+    { label: "Warden Dashboard", icon: "🏛️", href: "/dashboard/warden" },
+    { label: "All Complaints", icon: "📋", href: "/dashboard/warden/complaints" },
+    { label: "Guest House Forms", icon: "🏨", href: "/dashboard/warden/guest-house" },
+  ],
 };
 
-export default function Sidebar() {
-  const { role } = useAuth();
-
+export default function Sidebar({ role }) {
+  const links = navConfig[role] || [];
   return (
-    <div className="w-60 bg-purple-100 h-full p-4">
-      {menus[role].map((item) => (
-        <div key={item} className="bg-white p-3 rounded-lg mb-3 shadow hover:bg-purple-200 cursor-pointer">
-          {item}
-        </div>
-      ))}
-    </div>
+    <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col h-screen">
+      <div className="p-6 font-bold text-indigo-600 text-xl tracking-tight">HostelHub</div>
+      <nav className="mt-4 px-4 space-y-2 flex-1">
+        {links.map((link) => (
+          <a key={link.href} href={link.href} className="flex items-center gap-3 p-3 rounded-lg hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition">
+            <span>{link.icon}</span> {link.label}
+          </a>
+        ))}
+      </nav>
+      {/* Small Logout Button at Bottom */}
+      <div className="p-4 border-t border-slate-100">
+         <button className="flex items-center gap-3 p-3 w-full text-slate-500 hover:text-red-600 transition text-sm">
+           🚪 Logout
+         </button>
+      </div>
+    </aside>
   );
 }
