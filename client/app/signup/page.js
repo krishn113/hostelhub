@@ -15,6 +15,7 @@ export default function Signup() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { sendOtp, setTempUser } = useAuth();
   const router = useRouter();
 
@@ -63,15 +64,41 @@ export default function Signup() {
           ["entryNumber", "Entry Number"],
           ["degreeType", "Degree"]
         ].map(([key, label]) => (
-          <input
-            key={key}
-            type={key === "password" ? "password" : "text"}
-            placeholder={label}
-            className="w-full p-3 border rounded mb-2"
-            onChange={(e) =>
-              setForm({ ...form, [key]: e.target.value })
-            }
-          />
+          key === "degreeType" ? (
+            <select
+              key={key}
+              className="w-full p-3 border rounded mb-2 bg-white"
+              value={form.degreeType}
+              onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+            >
+              <option value="">Select Degree</option>
+              <option value="B.Tech">B.Tech</option>
+              <option value="M.Tech">M.Tech</option>
+              <option value="PhD">PhD</option>
+              <option value="MSc">MSc</option>
+            </select>
+          ) : (
+            <div key={key} className="relative mb-2">
+              <input
+                type={key === "password" ? (showPassword ? "text" : "password") : "text"}
+                placeholder={label}
+                className="w-full p-3 border rounded pr-10"
+                value={form[key]}
+                onChange={(e) =>
+                  setForm({ ...form, [key]: e.target.value })
+                }
+              />
+              {key === "password" && (
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors uppercase tracking-tight"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              )}
+            </div>
+          )
         ))}
 
         <button
