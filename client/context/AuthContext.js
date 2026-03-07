@@ -46,6 +46,12 @@ export default function AuthProvider({ children }) {
     }
   };
 
+  const logout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+    window.location.href = "/";
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -56,6 +62,7 @@ export default function AuthProvider({ children }) {
         tempUser,
         setTempUser,
         loading,
+        logout,
       }}
     >
       {children}
