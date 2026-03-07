@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import api from "@/utils/api";
+import api from "@/lib/api";
 
 export default function StudentListPage() {
   const [students, setStudents] = useState([]);

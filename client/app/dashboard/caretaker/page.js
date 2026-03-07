@@ -5,7 +5,7 @@ import StatsGrid from "@/components/StatsGrid";
 import DataTable from "@/components/DataTable";
 import StatusBadge from "@/components/StatusBadge";
 import axios from "axios";
-import api from "@/utils/api";
+import api from "@/lib/api";
 import Link from "next/link";
 import NoticeForm from "@/components/NoticeForm";
 

@@ -39,7 +39,6 @@ app.use("/api/complaints", complaintRoutes);
 app.use("/api/notices", noticeRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/complaints", complaintRoutes);
 app.use("/api/caretaker", caretakerRoutes);
 
 

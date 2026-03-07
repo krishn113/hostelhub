@@ -60,40 +60,54 @@ export const createComplaint = async (req, res) => {
 // Update your existing manageComplaint to push to the updates array
 export const manageComplaint = async (req, res) => {
   const { id } = req.params;
-  const { action, technicianDate, reason } = req.body; 
+  const { status, reason } = req.body; 
 
   try {
     const complaint = await Complaint.findById(id);
     if (!complaint) return res.status(404).json({ msg: "Not found" });
 
-    let statusUpdate = "";
-    let logMessage = "";
-
-    if (action === "accept") {
-      statusUpdate = "Scheduled";
-      complaint.technicianDate = technicianDate;
-      logMessage = "Caretaker has scheduled a technician.";
-    } else if (action === "reject") {
-      statusUpdate = "Rejected";
-      complaint.rejectionReason = reason;
-      logMessage = `Rejected: ${reason}`;
-    } else if (action === "resolve") {
-      statusUpdate = "Resolved";
-      logMessage = "Issue has been resolved.";
+    // Validate if the new status is one of the allowed ones in the model
+    const allowedStatuses = ["Pending", "Accepted", "Scheduled", "In Progress", "Resolved", "Rejected"];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ msg: "Invalid status value" });
     }
 
-    complaint.status = statusUpdate;
+    let logMessage = `Status updated to ${status}`;
+
+    if (status === "Rejected" && reason) {
+      complaint.rejectionReason = reason;
+      logMessage = `Rejected: ${reason}`;
+    }
+
+    complaint.status = status;
     
-    // Pushing to the new history array we added to the model
+    // Pushing to history array
     complaint.updates.push({
-      status: statusUpdate,
+      status: status,
       message: logMessage,
       updatedBy: req.user._id
     });
 
     await complaint.save();
-    res.json({ msg: `Complaint ${action}ed successfully`, complaint });
+    res.json({ msg: `Status updated to ${status}`, complaint });
   } catch (err) {
+    console.error("Update failed:", err);
     res.status(500).json({ msg: "Update failed" });
+  }
+};
+
+export const getComplaints = async (req, res) => {
+  try {
+    if (!req.user.hostelId) {
+      return res.status(403).json({ msg: "Caretaker has no hostel assigned." });
+    }
+
+    // Hostel Isolation: Only fetch complaints for the caretaker's hostel
+    const complaints = await Complaint.find({ hostelId: req.user.hostelId })
+      .populate("student", "name roomNumber")
+      .sort({ createdAt: -1 });
+    res.json(complaints);
+  } catch (err) {
+    res.status(500).json({ msg: "Failed to fetch complaints" });
   }
 };

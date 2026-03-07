@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
-import api from "@/utils/api";
+import api from "@/lib/api";
 import { 
   Wrench, History, Eye, Plus, X, 
   Calendar as CalendarIcon, CheckCircle2, Clock, Ban 
@@ -62,10 +62,12 @@ export default function StudentComplaints() {
 
   const getStatusStyles = (status) => {
     switch (status) {
-      case 'Resolved': return 'bg-emerald-500 text-white';
-      case 'Rejected': return 'bg-rose-500 text-white';
-      case 'Scheduled':
-      case 'In Progress': return 'bg-amber-400 text-white';
+      case 'Pending': return 'bg-amber-400 text-white';
+      case 'Accepted': return 'bg-blue-400 text-white';
+      case 'Scheduled': return 'bg-indigo-500 text-white';
+      case 'In Progress': return 'bg-purple-500 text-white';
+      case 'Resolved': return 'bg-green-500 text-white';
+      case 'Rejected': return 'bg-red-500 text-white';
       default: return 'bg-slate-400 text-white';
     }
   };

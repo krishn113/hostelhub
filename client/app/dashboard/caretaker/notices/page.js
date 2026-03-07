@@ -1,16 +1,14 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import api from "@/utils/api";
+import api from "@/lib/api";
+import NoticeForm from "@/components/NoticeForm";
 
 export default function NoticeDashboard() {
   const [notices, setNotices] = useState([]);
   const [noticeSearch, setNoticeSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [category, setCategory] = useState("Events");
   const [loading, setLoading] = useState(false);
   const [expandedNoticeId, setExpandedNoticeId] = useState(null);
 
@@ -50,32 +48,7 @@ export default function NoticeDashboard() {
     } catch (err) { alert("Pinning failed"); }
   };
 
-  const handleCreateNotice = async () => {
-  try {
-    const token = localStorage.getItem("token");
-
-    await api.post(
-      "/notices",
-      {
-        title,
-        content,
-        category
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
-
-    fetchNotices();
-    setIsModalOpen(false);
-
-  } catch (err) {
-    console.error(err);
-    alert("Failed to create notice");
-  }
-};
+// handleCreateNotice is now handled by NoticeForm component
 
   return (
     <DashboardLayout role="caretaker">
@@ -161,7 +134,10 @@ export default function NoticeDashboard() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-4">
                       <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-lg ${
-                        notice.category === 'Urgent' ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-500'
+                        notice.category === 'Urgent' ? 'bg-red-500 text-white shadow-lg shadow-red-100' : 
+                        notice.category === 'Academic' ? 'bg-blue-500 text-white shadow-lg shadow-blue-100' :
+                        notice.category === 'Maintenance' ? 'bg-amber-500 text-white shadow-lg shadow-amber-100' :
+                        'bg-slate-800 text-white shadow-lg shadow-slate-100'
                       }`}>
                         {notice.category}
                       </span>
@@ -270,68 +246,11 @@ export default function NoticeDashboard() {
           )}
         </div>
       </div>
-  {isModalOpen && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-
-    <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl border border-slate-200">
-
-      <h2 className="text-2xl font-black text-slate-800 mb-6">
-        Create New Notice
-      </h2>
-
-      <div className="space-y-4">
-
-        <input
-          type="text"
-          placeholder="Notice Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-        />
-
-        <textarea
-          placeholder="Notice Content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows="4"
-          className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-        />
-
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-        >
-          <option value="Urgent">Urgent</option>
-          <option value="Events">Events</option>
-          <option value="Academic">Academic</option>
-          <option value="Maintenance">Maintenance</option>
-        </select>
-
-      </div>
-
-      <div className="flex justify-end gap-3 mt-6">
-
-        <button
-          onClick={() => setIsModalOpen(false)}
-          className="px-5 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-sm font-bold"
-        >
-          Cancel
-        </button>
-
-        <button
-          onClick={handleCreateNotice}
-          disabled={loading}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-xl text-sm font-black hover:bg-indigo-700"
-        >
-          {loading ? "Posting..." : "Post Notice"}
-        </button>
-
-      </div>
-
-    </div>
-  </div>
-)}
+      <NoticeForm 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSuccess={fetchNotices} 
+      />
 
     </DashboardLayout>
   );

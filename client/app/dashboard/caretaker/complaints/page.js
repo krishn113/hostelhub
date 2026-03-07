@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import api from "@/utils/api";
+import api from "@/lib/api";
 
 // HELPER FUNCTION: Place this OUTSIDE your component
 const getCommonSlots = (complaints) => {
@@ -31,18 +31,20 @@ const [categoryFilter, setCategoryFilter] = useState("All");
 const [statusFilter, setStatusFilter] = useState("All"); 
   const commonSlots = useMemo(() => getCommonSlots(complaints), [complaints]);
 
-  const updateStatus = async (id, action, data = {}) => {
+  const updateStatus = async (id, status, data = {}) => {
     try {
-      await api.patch(`/complaints/${id}/manage`, { action, ...data });
+      await api.patch(`/complaints/${id}/manage`, { status, ...data });
       // Refresh data
+      const res = await api.get("/complaints");
+      setComplaints(res.data);
     } catch (err) { alert("Action failed"); }
   };
 
 const filteredComplaints = complaints.filter(c => {
-  const matchesSearch = c.student?.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        c.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        c.student?.roomNumber?.toString().includes(searchQuery) || false;
-  const matchesFloor = floorFilter === "All" || c.floor.toString() === floorFilter;
+  const matchesSearch = (c.student?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+                        (c.description || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        (c.student?.roomNumber?.toString() || "").includes(searchQuery);
+  const matchesFloor = floorFilter === "All" || c.floor?.toString() === floorFilter;
   const matchesCategory = categoryFilter === "All" || c.category === categoryFilter;
   const matchesStatus = statusFilter === "All" || c.status === statusFilter;
 
@@ -51,7 +53,7 @@ const filteredComplaints = complaints.filter(c => {
 useEffect(() => {
   const fetchComplaints = async () => {
     try {
-      const res = await api.get("/complaints"); // Verify this route matches your backend
+      const res = await api.get("/complaints"); 
       setComplaints(res.data);
     } catch (err) {
       console.error("Failed to fetch complaints", err);
@@ -60,22 +62,34 @@ useEffect(() => {
   fetchComplaints();
 }, []);
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Pending': return 'bg-amber-400';
+      case 'Accepted': return 'bg-blue-400';
+      case 'Scheduled': return 'bg-indigo-500';
+      case 'In Progress': return 'bg-purple-500';
+      case 'Resolved': return 'bg-green-500';
+      case 'Rejected': return 'bg-red-500';
+      default: return 'bg-slate-300';
+    }
+  };
+
   return (
   <DashboardLayout role="caretaker">
-    <div className="p-4 md:p-8 bg-slate-50 min-h-screen">
+    <div className="p-4 md:p-8 bg-slate-50 min-h-screen font-sans">
       
       {/* 1. TOP ANALYSIS REPORT SECTION */}
       <header className="mb-8">
-        <h1 className="text-3xl font-black text-slate-800 tracking-tight mb-2">Maintenance Analysis</h1>
-        <p className="text-slate-500 font-medium mb-6">Visual breakdown of pending issues across floors.</p>
+        <h1 className="text-3xl font-black text-slate-800 tracking-tight mb-2 uppercase italic">Maintenance Control</h1>
+        <p className="text-slate-500 font-medium mb-6">Status tracking and status management for all hostel residents.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {["Electrical", "Plumbing", "Furniture", "Internet"].map((cat) => {
             const pendingInCat = complaints.filter(c => c.category === cat && c.status === "Pending");
-            const affectedFloors = [...new Set(pendingInCat.map(c => c.floor))].sort();
+            const affectedFloors = [...new Set(pendingInCat.map(c => c.floor))].filter(f => f != null).sort();
 
             return (
-              <div key={cat} className="bg-white p-5 rounded-[2rem] border border-slate-200 shadow-sm">
+              <div key={cat} className="bg-white p-5 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-md transition-all">
                 <div className="flex justify-between items-start mb-4">
                   <span className="p-2 bg-slate-100 rounded-xl text-xl">
                     {cat === "Electrical" ? "⚡" : cat === "Plumbing" ? "🚰" : cat === "Furniture" ? "🪑" : "🌐"}
@@ -103,155 +117,180 @@ useEffect(() => {
         </div>
       </header>
 
-      {/* 2. MAIN COMPLAINT FEED (Single Column for Clarity) */}
+      {/* 2. MAIN COMPLAINT FEED */}
       <div className="max-w-6xl mx-auto">
   
   {/* SEARCH & FILTER BAR */}
-  <div className="bg-white p-4 rounded-[2rem] border border-slate-200 shadow-sm mb-8 space-y-4">
-    <div className="flex flex-col md:flex-row gap-4">
+  <div className="bg-white p-4 rounded-[2.5rem] border border-slate-200 shadow-sm mb-8 space-y-4">
+    <div className="flex flex-col md:flex-row gap-4 items-center">
       {/* Search Input */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative w-full">
         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
         <input 
           type="text"
           placeholder="Search by name, room, or issue..."
-          className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition"
+          className="w-full pl-11 pr-4 py-4 bg-slate-50 border-none rounded-[1.5rem] text-sm focus:ring-2 focus:ring-indigo-500 transition shadow-inner"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
 
       {/* Filter Dropdowns */}
-      <div className="flex flex-wrap gap-2">
-        {/* Status Filter */}
+      <div className="flex flex-wrap gap-2 w-full md:w-auto">
         <select 
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-slate-50 border-none rounded-2xl text-[10px] font-black uppercase px-4 py-3 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+          className="bg-slate-50 border-none rounded-2xl text-[10px] font-black uppercase px-6 py-4 focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm"
         >
           <option value="All">Status: All</option>
-          <option value="Pending">Pending</option>
-          <option value="Scheduled">Scheduled</option>
-          <option value="Resolved">Resolved</option>
+          {["Pending", "Accepted", "Scheduled", "In Progress", "Resolved", "Rejected"].map(s => (
+            <option key={s} value={s}>{s}</option>
+          ))}
         </select>
 
-        {/* Floor Filter */}
         <select 
           value={floorFilter}
           onChange={(e) => setFloorFilter(e.target.value)}
-          className="bg-slate-50 border-none rounded-2xl text-[10px] font-black uppercase px-4 py-3 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+          className="bg-slate-50 border-none rounded-2xl text-[10px] font-black uppercase px-6 py-4 focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm"
         >
           <option value="All">Floor: All</option>
-          <option value="1">Floor 1</option>
-          <option value="2">Floor 2</option>
-          <option value="3">Floor 3</option>
-          <option value="4">Floor 4</option>
+          {[1,2,3,4].map(f => <option key={f} value={f.toString()}>Floor {f}</option>)}
         </select>
 
-        {/* Category Filter */}
         <select 
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="bg-slate-50 border-none rounded-2xl text-[10px] font-black uppercase px-4 py-3 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+          className="bg-slate-50 border-none rounded-2xl text-[10px] font-black uppercase px-6 py-4 focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm"
         >
           <option value="All">Category: All</option>
-          <option value="Electrical">Electrical</option>
-          <option value="Plumbing">Plumbing</option>
-          <option value="Furniture">Furniture</option>
-          <option value="Internet">Internet</option>
+          {["Electrical", "Plumbing", "Furniture", "Internet", "Cleaning"].map(c => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
     </div>
   </div>
 
   <div className="flex justify-between items-center mb-6 px-4">
-      <h2 className="text-xl font-bold text-slate-800">Results ({filteredComplaints.length})</h2>
+      <h2 className="text-xl font-bold text-slate-800">Operational Log ({filteredComplaints.length})</h2>
       <button 
         onClick={() => {setSearchQuery(""); setFloorFilter("All"); setCategoryFilter("All"); setStatusFilter("All");}}
-        className="text-[10px] font-bold text-indigo-600 uppercase hover:underline"
+        className="text-[10px] font-black text-indigo-600 uppercase hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition"
       >
-        Reset Filters
+        Clear All Filters
       </button>
   </div>
 
   {/* RENDER FILTERED COMPLAINTS */}
-  <div className="space-y-4">
+  <div className="space-y-6">
     {filteredComplaints.length > 0 ? (
       filteredComplaints.map((item) => (
-        <div key={item._id} className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6 items-center relative overflow-hidden group hover:border-indigo-200 transition-all">
+        <div key={item._id} className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm flex flex-col md:flex-row gap-8 items-center relative overflow-hidden group hover:shadow-xl hover:border-indigo-100 transition-all duration-300">
+          
           {/* Minimalist Status Indicator */}
-          <div className={`absolute left-0 top-0 h-full w-1.5 ${
-            item.status === 'Pending' ? 'bg-amber-400' : 
-            item.status === 'Scheduled' ? 'bg-indigo-500' : 'bg-green-500'
-          }`} />
+          <div className={`absolute left-0 top-0 h-full w-2 ${getStatusColor(item.status)}`} />
 
           {/* Student Info & Slot */}
-          <div className="w-full md:w-48 flex-shrink-0 text-center md:text-left border-b md:border-b-0 md:border-r border-slate-100 pb-4 md:pb-0 md:pr-6">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Student Slot</p>
-            <p className="text-sm font-black text-indigo-600 mb-3">{item.preferredSlot}</p>
-            <div className="flex items-center justify-center md:justify-start gap-2">
-               <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">
+          <div className="w-full md:w-56 flex-shrink-0 text-center md:text-left border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0 md:pr-8">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Reported By</p>
+            <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
+               <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-lg font-black text-slate-600 border border-slate-200 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
                   {item.student?.name?.charAt(0) || '?'}
                </div>
                <div className="text-left">
-                  <p className="text-xs font-bold text-slate-700 truncate w-24">{(item.student?.name) || 'Unknown Student'}</p>
-                  <p className="text-[9px] text-slate-400">Room {item.student?.roomNumber || 'N/A'}</p>
+                  <p className="text-sm font-black text-slate-800 truncate w-32">{item.student?.name || 'Unknown'}</p>
+                  <p className="text-[10px] font-bold text-slate-400">Room {item.student?.roomNumber || 'N/A'}</p>
                </div>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+              <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Preferred Time</p>
+              <p className="text-xs font-bold text-indigo-600 truncate">{item.preferredSlot || "Anytime"}</p>
             </div>
           </div>
 
           {/* Problem Description */}
-          <div className="flex-1">
-             <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-black text-indigo-500 uppercase px-2 py-0.5 bg-indigo-50 rounded-md">
-                  Floor {item.floor}
+          <div className="flex-1 w-full">
+             <div className="flex items-center gap-2 mb-3">
+                <span className="text-[10px] font-black text-indigo-600 uppercase px-3 py-1 bg-indigo-50 rounded-full border border-indigo-100">
+                  Floor {item.floor || 'Unknown'}
                 </span>
-                <span className="text-[10px] font-black text-slate-400 uppercase">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   {item.category}
                 </span>
+                <span className={`ml-auto text-[9px] font-black uppercase px-2 py-0.5 rounded-md text-white ${getStatusColor(item.status)}`}>
+                  {item.status}
+                </span>
              </div>
-             <h3 className="text-lg font-bold text-slate-800 tracking-tight">{item.description}</h3>
+             <h3 className="text-xl font-bold text-slate-800 tracking-tight leading-snug">{item.description}</h3>
+             
+             {item.status === 'Rejected' && item.rejectionReason && (
+               <p className="mt-3 text-sm text-red-500 font-medium bg-red-50 p-3 rounded-xl border border-red-100">
+                 Reason: {item.rejectionReason}
+               </p>
+             )}
+
+             {item.status === 'Scheduled' && item.technicianDate && (
+               <p className="mt-3 text-sm text-emerald-600 font-bold bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+                 📅 Scheduled for: {new Date(item.technicianDate).toDateString()}
+               </p>
+             )}
           </div>
 
-          {/* Contextual Actions */}
-          <div className="w-full md:w-auto flex gap-2">
+          {/* Action Buttons Layer */}
+          <div className="w-full md:w-auto flex flex-wrap justify-center gap-2">
             {item.status === "Pending" && (
               <>
                 <button 
-                  onClick={() => {
-                    const date = prompt("Schedule technician for:");
-                    if(date) updateStatus(item._id, "accept", { technicianDate: date });
-                  }}
-                  className="flex-1 md:flex-none px-6 py-3 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition shadow-lg shadow-indigo-100"
+                  onClick={() => updateStatus(item._id, "Scheduled")}
+                  className="px-6 py-3 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition shadow-lg shadow-indigo-100"
                 >
                   Schedule
                 </button>
+                <button 
+                  onClick={() => {
+                    const reason = prompt("Reason for rejection:");
+                    if(reason) updateStatus(item._id, "Rejected", { reason });
+                  }}
+                  className="px-6 py-3 bg-slate-100 text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 hover:text-red-600 transition"
+                >
+                  Reject
+                </button>
               </>
             )}
+
             {item.status === "Scheduled" && (
               <button 
-                onClick={() => updateStatus(item._id, "resolve")}
-                className="w-full md:w-auto px-8 py-3 bg-green-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest"
+                onClick={() => updateStatus(item._id, "In Progress")}
+                className="px-6 py-3 bg-purple-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-700 transition"
+              >
+                Mark In Progress
+              </button>
+            )}
+
+            {item.status === "In Progress" && (
+              <button 
+                onClick={() => updateStatus(item._id, "Resolved")}
+                className="px-8 py-4 bg-green-600 text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-green-700 transition shadow-xl shadow-green-100"
               >
                 Mark Resolved
               </button>
             )}
-            {item.status === "Resolved" && (
-              <div className="px-4 py-2 bg-slate-50 text-slate-400 rounded-xl text-[10px] font-black uppercase border border-slate-100">
-                Completed
+
+            {(item.status === "Resolved" || item.status === "Rejected") && (
+              <div className="px-5 py-3 bg-slate-100 text-slate-400 rounded-2xl text-[9px] font-black uppercase border border-slate-200 cursor-default">
+                Case Closed
               </div>
             )}
           </div>
         </div>
       ))
     ) : (
-      <div className="text-center py-20 bg-white rounded-[2rem] border border-dashed border-slate-300">
-        <p className="text-slate-400 font-medium">No complaints match your search criteria.</p>
+      <div className="text-center py-20 bg-white rounded-[4rem] border border-dashed border-slate-200">
+        <div className="text-5xl mb-4">📂</div>
+        <p className="text-slate-400 font-bold uppercase tracking-widest">No matching logs found</p>
       </div>
     )}
   </div>
 </div>
     </div>
   </DashboardLayout>
-);
+  );
 }

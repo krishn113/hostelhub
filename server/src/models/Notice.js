@@ -5,7 +5,11 @@ const noticeSchema = new mongoose.Schema({
   content: { type: String, required: true },
   author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   hostel: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel" }, // removed required: true
-  category: { type: String, default: "Events" },
+  category: { 
+    type: String, 
+    enum: ["Urgent", "Academic", "Maintenance", "Events"],
+    default: "Events" 
+  },
   isPinned: { type: Boolean, default: false },
   
   // For images and documents (PDFs, Docx, etc.)

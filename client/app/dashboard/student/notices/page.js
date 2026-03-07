@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
-import api from "@/utils/api";
+import api from "@/lib/api";
 import { Bell, Search, Info, TriangleAlert, CalendarDays, Pin } from "lucide-react";
 
 export default function StudentNoticeBoard() {
@@ -88,7 +88,10 @@ export default function StudentNoticeBoard() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-lg ${
-                      notice.category === 'Urgent' ? 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-500'
+                      notice.category === 'Urgent' ? 'bg-red-500 text-white shadow-lg shadow-red-100' : 
+                      notice.category === 'Academic' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-100' :
+                      notice.category === 'Maintenance' ? 'bg-amber-500 text-white shadow-lg shadow-amber-100' :
+                      'bg-slate-800 text-white shadow-lg shadow-slate-100'
                     }`}>
                       {notice.category}
                     </span>

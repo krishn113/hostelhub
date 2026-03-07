@@ -6,6 +6,7 @@ export default function NoticeForm({ isOpen, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [category, setCategory] = useState("Events");
   const [links, setLinks] = useState([{ label: "", url: "" }]);
   const [attachments, setAttachments] = useState([]); // Array of File objects
   const fileInputRef = useRef(null);
@@ -42,6 +43,7 @@ export default function NoticeForm({ isOpen, onClose, onSuccess }) {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("content", content);
+      formData.append("category", category);
       
       // Append filtered links as a stringified array
       const validLinks = links.filter((l) => l.url !== "");
@@ -99,10 +101,24 @@ export default function NoticeForm({ isOpen, onClose, onSuccess }) {
             <textarea 
               required 
               rows="4" 
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
               value={content}
               onChange={(e) => setContent(e.target.value)}
             />
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Category</label>
+            <select 
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              {["Urgent", "Academic", "Maintenance", "Events"].map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
           </div>
 
           {/* Attachments Section */}
