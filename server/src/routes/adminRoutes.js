@@ -9,7 +9,10 @@ import {
   getAllocations,
   allocateStudent,
   createStaff,
-  updateBatchRule
+  updateBatchRule,
+  deleteBatchRule, 
+  getDashboardStats,
+  getHostelOccupancy
 } from "../controllers/adminController.js";
 
 import { protect, allowRoles } from "../middleware/auth.js";
@@ -26,9 +29,23 @@ router.get("/rooms/:hostelId", protect, allowRoles("admin"), getRooms);
 router.post("/allocations/batch", protect, allowRoles("admin"), allocateBatch);
 router.get("/allocations/batch", protect, allowRoles("admin"), getAllocations);
 router.put("/allocations/batch/:id", protect, allowRoles("admin"), updateBatchRule);
+router.delete("/allocations/batch/:id", protect, allowRoles("admin"), deleteBatchRule);
 
 router.post("/allocations/student", protect, allowRoles("admin"), allocateStudent);
 
 router.post("/staff", protect, allowRoles("admin"), createStaff);
+router.get(
+  "/dashboard",
+  protect,
+  allowRoles("admin"),
+  getDashboardStats
+);
+
+router.get(
+  "/dashboard/hostel-occupancy",
+  protect,
+  allowRoles("admin"),
+  getHostelOccupancy
+);
 
 export default router;

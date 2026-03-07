@@ -19,52 +19,24 @@ const transporter = nodemailer.createTransport({
 // --- Hostels ---
 export const addHostel = async (req, res) => {
   try {
+
     const { name, type, roomConfigs } = req.body;
-    
-    // 1. Create Hostel
-    const hostel = await Hostel.create({ name, type });
 
-    // 2. Create Rooms based on configs
-    if (Array.isArray(roomConfigs) && roomConfigs.length > 0) {
-      const roomsToCreate = [];
-      let totalRoomsCount = 0;
-      const prefixCount = { 1: 0, 2: 0, 3: 0 };
+    const totalRooms = roomConfigs.reduce(
+      (sum, r) => sum + Number(r.rooms), 
+      0
+    );
 
-      for (const config of roomConfigs) {
-        const capacity = parseInt(config.capacity);
-        const count = parseInt(config.rooms) || 0;
+    const hostel = await Hostel.create({
+      name,
+      type,
+      roomConfigs,
+      totalRooms
+    });
 
-        if (count > 0 && capacity > 0) {
-          const prefix = capacity === 1 ? 'S' : (capacity === 2 ? 'D' : (capacity === 3 ? 'T' : `C${capacity}-`));
-          
-          let roomType = "Single";
-          if (capacity === 2) roomType = "Double";
-          if (capacity === 3) roomType = "Triple";
+    res.json(hostel);
 
-          for (let i = 1; i <= count; i++) {
-            prefixCount[capacity] = (prefixCount[capacity] || 0) + 1;
-            roomsToCreate.push({
-              roomNumber: `${prefix}${prefixCount[capacity]}`,
-              hostelId: hostel._id,
-              type: roomType
-            });
-            totalRoomsCount++;
-          }
-        }
-      }
-
-      if (roomsToCreate.length > 0) {
-        await Room.insertMany(roomsToCreate);
-        hostel.totalRooms = totalRoomsCount;
-        await hostel.save();
-      }
-    }
-
-    res.status(201).json(hostel);
   } catch (err) {
-    if (err.code === 11000) {
-      return res.status(400).json({ error: "Hostel with this name and type already exists." });
-    }
     res.status(500).json({ error: err.message });
   }
 };
@@ -80,19 +52,27 @@ export const getHostels = async (req, res) => {
 
 export const updateHostel = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, type } = req.body;
-    
-    // Check if another hostel with same name+type exists (excluding current)
-    const exists = await Hostel.findOne({ name, type, _id: { $ne: id } });
-    if (exists) {
-      return res.status(400).json({ error: "Hostel with this name and type already exists." });
-    }
 
-    const hostel = await Hostel.findByIdAndUpdate(id, { name, type }, { new: true });
-    if (!hostel) return res.status(404).json({ error: "Hostel not found" });
-    
+    const { name, type, roomConfigs } = req.body;
+
+    const totalRooms = roomConfigs.reduce(
+      (sum, r) => sum + Number(r.rooms),
+      0
+    );
+
+    const hostel = await Hostel.findByIdAndUpdate(
+      req.params.id,
+      {
+        name,
+        type,
+        roomConfigs,
+        totalRooms
+      },
+      { new: true }
+    );
+
     res.json(hostel);
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -225,6 +205,90 @@ Please login and change your password immediately.
 };
 
 export const updateBatchRule = async (req, res) => {
-  await Allocation.findByIdAndUpdate(req.params.id, req.body);
+  await YearAllocation.findByIdAndUpdate(req.params.id, req.body);
   res.json({ msg: "Rule updated" });
+};
+
+export const deleteBatchRule = async (req, res) => {
+  try {
+    await YearAllocation.findByIdAndDelete(req.params.id);
+    res.json({ message: "Rule deleted" });
+  } catch (err) {
+    res.status(500).json({ message: "Delete failed" });
+  }
+};
+
+export const getDashboardStats = async (req, res) => {
+  try {
+
+    const hostels = await Hostel.find();
+
+    let totalRooms = 0;
+    let totalCapacity = 0;
+
+    hostels.forEach(h => {
+      h.roomConfigs.forEach(rc => {
+        totalRooms += rc.rooms;
+        totalCapacity += rc.rooms * rc.capacity;
+      });
+    });
+
+    const totalHostels = hostels.length;
+
+    const occupiedBeds = await User.countDocuments({
+      hostelId: { $ne: null },
+      role: "student"
+    });
+
+    const occupancyRate =
+      totalCapacity === 0
+        ? 0
+        : Math.round((occupiedBeds / totalCapacity) * 100);
+
+    res.json({
+      totalHostels,
+      totalRooms,
+      totalCapacity,
+      occupiedBeds,
+      occupancyRate
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getHostelOccupancy = async (req, res) => {
+  try {
+
+    const hostels = await Hostel.find();
+
+    const data = await Promise.all(
+      hostels.map(async (h) => {
+
+        let capacity = 0;
+
+        h.roomConfigs.forEach(rc => {
+          capacity += rc.rooms * rc.capacity;
+        });
+
+        const occupied = await User.countDocuments({
+          hostelId: h._id,
+          role: "student"
+        });
+
+        return {
+          name: h.name,
+          capacity,
+          occupied
+        };
+
+      })
+    );
+
+    res.json(data);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };

@@ -1,9 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import api from "@/utils/api";
+import API from "@/lib/api";
 import { Plus, Mail, User, Building } from "lucide-react";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export default function StaffManagement() {
   const [hostels, setHostels] = useState([]);
@@ -22,7 +20,7 @@ export default function StaffManagement() {
 
   const fetchHostels = async () => {
     try {
-      const res = await api.get(`${API}/admin/hostels`);
+      const res = await API.get("/admin/hostels");
       setHostels(res.data);
       if (res.data.length > 0)
         setForm((prev) => ({ ...prev, hostelId: res.data[0]._id }));
@@ -36,7 +34,7 @@ export default function StaffManagement() {
       if (!form.email || !form.name) return alert("Fill all fields");
 
       setLoading(true);
-      await api.post(`${API}/admin/staff`, form);
+      await API.post("/admin/staff", form);
 
       alert("✅ Staff Created & Credentials Sent!");
       setForm({ ...form, name: "", email: "" });

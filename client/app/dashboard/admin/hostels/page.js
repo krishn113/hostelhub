@@ -1,191 +1,369 @@
 "use client";
 import { useState, useEffect } from "react";
-import api from "@/utils/api";
-import { Building2, Pencil, Plus, DoorOpen } from "lucide-react";
+import API from "@/lib/api";
+import { Building2, Pencil, Plus, DoorOpen, Trash2} from "lucide-react";
 
 export default function AdminHostels() {
+
   const [hostels, setHostels] = useState([]);
-  const [form, setForm] = useState({ name: "", type: "Mixed" });
-  const [editMode, setEditMode] = useState(false);
-  const [editId, setEditId] = useState(null);
-  const [showMassAdd, setShowMassAdd] = useState(false);
-  const [massForm, setMassForm] = useState({
-    hostelId: "",
-    startRoomNumber: "101",
-    count: "50",
-    capacity: "2"
+
+  const [form, setForm] = useState({
+    name: "",
+    type: "Mixed",
+    roomConfigs: [{ capacity: "", rooms: "" }]
   });
 
-  useEffect(() => { fetchHostels(); }, []);
+  const [editMode, setEditMode] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  useEffect(() => {
+    fetchHostels();
+  }, []);
 
   const fetchHostels = async () => {
-    const res = await api.get("/admin/hostels");
-    setHostels(res.data);
+    try {
+      const res = await API.get("/admin/hostels");
+      setHostels(res.data);
+    } catch (err) {
+      console.error("Error fetching hostels", err);
+    }
+  };
+
+  const resetForm = () => {
+    setForm({
+      name: "",
+      type: "Mixed",
+      roomConfigs: [{ capacity: "", rooms: "" }]
+    });
+    setEditMode(false);
+    setEditId(null);
   };
 
   const handleSubmit = async () => {
-    if (!form.name) return alert("Enter hostel name");
 
-    if (editMode)
-      await api.put(`/admin/hostels/${editId}`, form);
-    else
-      await api.post("/admin/hostels", form);
+    console.log("EditMode:", editMode);
+    console.log("EditId:", editId);
 
-    setForm({ name: "", type: "Mixed" });
-    setEditMode(false);
-    fetchHostels();
+    if (!form.name.trim()) {
+      alert("Hostel name required");
+      return;
+    }
+
+    if (form.roomConfigs.some(c => !c.capacity || !c.rooms)) {
+      alert("Fill all room configs");
+      return;
+    }
+
+    try {
+
+      const payload = {
+        name: form.name,
+        type: form.type,
+        roomConfigs: form.roomConfigs.map(c => ({
+          capacity: Number(c.capacity),
+          rooms: Number(c.rooms)
+        }))
+      };
+
+      console.log("Payload:", payload);
+
+      if (editMode) {
+        await API.put(`/admin/hostels/${editId}`, payload);
+        console.log("Updating hostel...");
+      } else {
+        await API.post("/admin/hostels", payload);
+        console.log("Creating hostel...");
+      }
+
+      resetForm();
+      setShowEditModal(false);
+      fetchHostels();
+
+    } catch (err) {
+      console.error("Submit error", err.response?.data || err);
+    }
   };
 
   const handleEdit = (h) => {
+    console.log("Editing hostel:", h);
+
     setEditMode(true);
     setEditId(h._id);
-    setForm({ name: h.name, type: h.type });
+
+    setForm({
+      name: h.name || "",
+      type: h.type || "Mixed",
+      roomConfigs:
+        h.roomConfigs?.length
+          ? h.roomConfigs.map((r) => ({
+              capacity: r.capacity?.toString() || "",
+              rooms: r.rooms?.toString() || ""
+            }))
+          : [{ capacity: "", rooms: "" }]
+    });
+
+    setShowEditModal(true);
   };
 
-  const handleMassAdd = async () => {
-    await api.post("/admin/rooms/mass", massForm);
-    setShowMassAdd(false);
-    fetchHostels();
+  const addRoomConfig = () => {
+    setForm({
+      ...form,
+      roomConfigs: [...form.roomConfigs, { capacity: "", rooms: "" }]
+    });
   };
+
+  const updateRoomConfig = (index, field, value) => {
+
+    const updated = [...form.roomConfigs];
+    updated[index][field] = value;
+
+    setForm({
+      ...form,
+      roomConfigs: updated
+    });
+  };
+
+  const deleteRoomConfig = (index) => {
+
+    if (form.roomConfigs.length === 1) return;
+
+    const updated = form.roomConfigs.filter((_, i) => i !== index);
+
+    setForm({
+      ...form,
+      roomConfigs: updated
+    });
+  };
+
+  const totalRooms = form.roomConfigs.reduce(
+    (sum, config) => sum + (Number(config.rooms) || 0),
+    0
+  );
 
   return (
-    <div className="w-full px-8 py-6 space-y-10 animate-in fade-in duration-500">
+    <div className="w-full px-8 py-6 space-y-10">
 
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="flex justify-between items-end">
+
         <div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-4xl font-black text-slate-900">
             Hostel Management
           </h1>
-          <p className="text-slate-500 font-medium italic">
-            Create and manage hostels & rooms
-          </p>
+          <p className="text-slate-500">Create and manage hostels</p>
         </div>
 
-        <div className="bg-indigo-50 px-4 py-2 rounded-2xl border border-indigo-100 text-indigo-700 text-xs font-black uppercase">
+        <div className="bg-indigo-50 px-4 py-2 rounded-xl text-indigo-600 font-bold text-xs">
           {hostels.length} Hostels
         </div>
+
       </div>
 
-      {/* ADD HOSTEL FORM */}
-      <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm grid md:grid-cols-3 gap-6">
+      {/* FORM */}
 
-        <div>
-          <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
-            Hostel Name
-          </label>
+      <div className="bg-white p-8 rounded-3xl shadow-sm border space-y-6">
+
+        <div className="grid md:grid-cols-2 gap-6">
+
           <input
             value={form.name}
-            onChange={e => setForm({ ...form, name: e.target.value })}
-            placeholder="Raavi / Brahmaputra"
-            className="w-full bg-slate-50 rounded-2xl py-4 px-4 mt-1 focus:ring-2 focus:ring-indigo-500"
+            onChange={(e)=>setForm({...form,name:e.target.value})}
+            placeholder="Hostel Name"
+            className="bg-slate-50 p-4 rounded-xl focus:ring-2 focus:ring-indigo-500"
           />
-        </div>
 
-        <div>
-          <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
-            Type
-          </label>
           <select
             value={form.type}
-            onChange={e => setForm({ ...form, type: e.target.value })}
-            className="w-full bg-slate-50 rounded-2xl py-4 px-4 mt-1 focus:ring-2 focus:ring-indigo-500"
+            onChange={(e)=>setForm({...form,type:e.target.value})}
+            className="bg-slate-50 p-4 rounded-xl"
           >
             <option>Boys</option>
             <option>Girls</option>
             <option>Mixed</option>
           </select>
+
+        </div>
+
+        {/* ROOM CONFIG */}
+
+        <div className="space-y-4">
+
+          <div className="flex justify-between text-sm font-bold text-indigo-600">
+            <span>Room Capacities</span>
+            <span>Total Rooms: {totalRooms}</span>
+          </div>
+
+          {form.roomConfigs.map((config,index)=>(
+            <div
+              key={index}
+              className="grid grid-cols-5 gap-3 bg-slate-50 p-3 rounded-xl"
+            >
+
+              <input
+                type="number"
+                placeholder="Capacity"
+                value={config.capacity}
+                onChange={(e)=>updateRoomConfig(index,"capacity",e.target.value)}
+                className="p-2 rounded-lg"
+              />
+
+              <input
+                type="number"
+                placeholder="Rooms"
+                value={config.rooms}
+                onChange={(e)=>updateRoomConfig(index,"rooms",e.target.value)}
+                className="p-2 rounded-lg"
+              />
+
+              {form.roomConfigs.length>1 && (
+                <button
+                  onClick={()=>deleteRoomConfig(index)}
+                  className="flex items-center gap-1 text-red-600 text-xs font-bold"
+                >
+                   <Trash2 size={14}/>
+                </button>
+              )}
+
+            </div>
+          ))}
+
+          <button
+            onClick={addRoomConfig}
+            className="text-indigo-600 font-bold text-sm"
+          >
+            + Add Capacity
+          </button>
+
         </div>
 
         <button
           onClick={handleSubmit}
-          className="flex items-center justify-center gap-2 bg-indigo-600 text-white rounded-2xl py-4 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all"
+          className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold flex justify-center items-center gap-2 hover:bg-indigo-700"
         >
-          <Plus size={16} className="mt-[1px]" />
+          <Plus size={16}/>
           {editMode ? "Update Hostel" : "Add Hostel"}
         </button>
+
       </div>
 
       {/* HOSTEL CARDS */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {hostels.map(h => (
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        {hostels.map(h=>(
           <div
             key={h._id}
-            className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:border-indigo-100 transition-all relative overflow-hidden"
+            className="bg-white p-8 rounded-3xl border shadow-sm hover:shadow-lg transition relative"
           >
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Building2 size={70}/>
-            </div>
 
-            <div className="flex justify-between items-start mb-6">
+            <Building2 className="absolute right-4 top-4 opacity-10" size={70}/>
+
+            <div className="flex justify-between mb-4">
+
               <div>
-                <h3 className="text-xl font-bold text-slate-800">
-                  {h.name}
-                </h3>
-                <p className="text-slate-500 text-sm">{h.type} Hostel</p>
+                <h3 className="text-xl font-bold">{h.name}</h3>
+                <p className="text-sm text-slate-500">{h.type} Hostel</p>
               </div>
 
               <button
-                onClick={() => handleEdit(h)}
-                className="flex items-center gap-1 text-indigo-600 text-xs font-black uppercase hover:underline"
+                onClick={()=>handleEdit(h)}
+                className="text-indigo-600 text-xs font-bold flex gap-1 items-center z-10"
               >
-                <Pencil size={12} className="mt-[1px]" />
-                Edit
+                <Pencil size={12}/> Edit
               </button>
+
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-slate-600">
+            <div className="flex gap-2 text-sm text-slate-600">
               <DoorOpen size={16}/>
-              <span>Total Rooms: <b>{h.totalRooms}</b></span>
+              Total Rooms: <b>{h.totalRooms}</b>
             </div>
 
-            <button
-              onClick={() => {
-                setMassForm(prev => ({ ...prev, hostelId: h._id }));
-                setShowMassAdd(true);
-              }}
-              className="mt-6 w-full bg-emerald-500 text-white py-3 rounded-2xl font-black text-xs uppercase shadow-xl shadow-emerald-100 hover:bg-emerald-600 hover:-translate-y-1 transition-all"
-            >
-              Mass Add Rooms
-            </button>
           </div>
         ))}
+
       </div>
 
-      {/* MASS ADD MODAL */}
-      {showMassAdd && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-8 rounded-[2.5rem] shadow-xl w-96 space-y-4 animate-in zoom-in-95 duration-300">
+      {/* EDIT MODAL */}
 
-            <h2 className="text-xl font-black text-slate-800">
-              Add Rooms
-            </h2>
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
-            {["startRoomNumber","count","capacity"].map(field => (
-              <input
-                key={field}
-                placeholder={field}
-                value={massForm[field]}
-                onChange={e => setMassForm({...massForm,[field]:e.target.value})}
-                className="w-full bg-slate-50 rounded-2xl py-3 px-4"
-              />
+          <div className="bg-white w-[500px] p-8 rounded-3xl space-y-6">
+
+            <h2 className="text-xl font-bold">Edit Hostel</h2>
+
+            <input
+              value={form.name}
+              onChange={(e)=>setForm({...form,name:e.target.value})}
+              className="w-full bg-slate-50 p-3 rounded-xl"
+            />
+
+            <select
+              value={form.type}
+              onChange={(e)=>setForm({...form,type:e.target.value})}
+              className="w-full bg-slate-50 p-3 rounded-xl"
+            >
+              <option>Boys</option>
+              <option>Girls</option>
+              <option>Mixed</option>
+            </select>
+
+            {form.roomConfigs.map((config,index)=>(
+              <div key={index} className="grid grid-cols-5 gap-2">
+
+                <input
+                  value={config.capacity}
+                  type="number"
+                  onChange={(e)=>updateRoomConfig(index,"capacity",e.target.value)}
+                  className="col-span-2 bg-slate-50 p-2 rounded-lg"
+                />
+
+                <input
+                  value={config.rooms}
+                  type="number"
+                  onChange={(e)=>updateRoomConfig(index,"rooms",e.target.value)}
+                  className="col-span-2 bg-slate-50 p-2 rounded-lg"
+                />
+
+                {form.roomConfigs.length>1 && (
+                  <button onClick={()=>deleteRoomConfig(index)}> <Trash2 size={14}/></button>
+                )}
+
+              </div>
             ))}
 
-            <div className="flex gap-3 pt-2">
+            <button
+              onClick={addRoomConfig}
+              className="text-indigo-600 text-sm"
+            >
+              + Add Capacity
+            </button>
+
+            <div className="flex gap-3">
+
               <button
-                onClick={()=>setShowMassAdd(false)}
+                onClick={()=>{
+                  setShowEditModal(false)
+                  resetForm()
+                }}
                 className="flex-1 bg-slate-100 py-3 rounded-xl"
               >
                 Cancel
               </button>
+
               <button
-                onClick={handleMassAdd}
-                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl shadow-lg"
+                onClick={handleSubmit}
+                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl"
               >
-                Add Rooms
+                Update Hostel
               </button>
+
             </div>
+
           </div>
+
         </div>
       )}
 
