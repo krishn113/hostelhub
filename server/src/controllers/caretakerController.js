@@ -233,3 +233,30 @@ export const getRoomStats = async (req, res) => {
     res.status(500).json({ msg: "Error fetching room stats" });
   }
 };
+
+import HostelLeaving from "../models/HostelLeaving.js";
+import GuestHouseBooking from "../models/GuestHouseBooking.js";
+
+export const getHostelLeavingForms = async (req, res) => {
+  try {
+    const forms = await HostelLeaving.find({ hostelId: req.user.hostelId })
+      .populate("studentId", "name email entryNumber")
+      .sort({ createdAt: -1 });
+    res.json(forms);
+  } catch (error) {
+    console.error("Error fetching hostel leaving forms:", error);
+    res.status(500).json({ error: "Failed to fetch leaving forms" });
+  }
+};
+
+export const getGuestHouseForms = async (req, res) => {
+  try {
+    const forms = await GuestHouseBooking.find({ hostelId: req.user.hostelId })
+      .populate("studentId", "name email entryNumber")
+      .sort({ createdAt: -1 });
+    res.json(forms);
+  } catch (error) {
+    console.error("Error fetching guesthouse forms:", error);
+    res.status(500).json({ error: "Failed to fetch guesthouse forms" });
+  }
+};
