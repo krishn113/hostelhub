@@ -1,0 +1,41 @@
+Connected to MongoDB
+
+=== ALL HOSTELS ===
+  id=69ab0e386c440faeab091e39 | name=Brahmaputra | type=Boys
+  id=69ab0e4e6c440faeab091e3e | name=Brahmaputra | type=Girls
+  id=69ab0e5c6c440faeab091e43 | name=Raavi | type=Girls
+  id=69ab0e656c440faeab091e48 | name=Beas | type=Boys
+  id=69ab0e6e6c440faeab091e4d | name=Satluj | type=Boys
+  id=69ab0e786c440faeab091e52 | name=Chenab | type=Boys
+
+=== ALL YEAR ALLOCATION RULES ===
+  hostelId=69ab0e386c440faeab091e39 | year=2023 | gender=Female | degreeType=B.Tech
+
+=== ALL CARETAKERS ===
+  name=Caretaker BHG | hostelId=69ab0e4e6c440faeab091e3e
+  name=Caretaker Chenab | hostelId=69ab0e786c440faeab091e52
+  name=Caretaker Raavi | hostelId=69ab0e5c6c440faeab091e43
+
+=== KRISHNA AGARWAL ===
+  name=Krishna Agarwal
+  year=2023
+  gender=undefined
+  degreeType=btech
+  hostelId=undefined
+  role=student
+
+=== RULE vs STUDENT COMPARISON ===
+  rule.hostelId    = 69ab0e386c440faeab091e39
+  rule.year        = 2023
+  rule.gender      = Female
+  rule.degreeType  = B.Tech
+
+  year match: "2023" === "2023" => true
+  gender match: "undefined" ~= /Female/i => false
+  degree match: "btech" ~= /B[^a-zA-Z0-9]*T[^a-zA-Z0-9]*e[^a-zA-Z0-9]*c[^a-zA-Z0-9]*h/i => true
+  hostel unassigned: true
+
+  SHOULD APPEAR: false
+
+  Rule points to: Brahmaputra
+  Caretaker for this hostel: NONE ASSIGNED!

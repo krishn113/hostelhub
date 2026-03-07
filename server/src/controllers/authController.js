@@ -213,4 +213,22 @@ export const resetPassword = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+}
+
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password").populate("hostelId", "name type");
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    res.json({
+      ...user.toObject(),
+      hostelName: user.hostelId ? user.hostelId.name : null,
+      hostelType: user.hostelId ? user.hostelId.type : null
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch profile info" });
+  }
 };
+
