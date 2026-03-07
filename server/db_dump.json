@@ -1,0 +1,102 @@
+{
+  "rules": [
+    {
+      "_id": "69abe2e3ab46a7ea7a796ef1",
+      "year": "2023",
+      "degreeType": "B.Tech",
+      "gender": "Female",
+      "__v": 0,
+      "createdAt": "2026-03-07T08:33:33.699Z",
+      "hostelId": "69ab0e386c440faeab091e39",
+      "updatedAt": "2026-03-07T08:33:33.699Z"
+    }
+  ],
+  "users": [
+    {
+      "_id": "69935e8116941d1b02438eb0",
+      "name": "Krishna Agarwal",
+      "email": "2023csb1114@iitrpr.ac.in",
+      "role": "student",
+      "year": "2023",
+      "entryNumber": "2023csb1141",
+      "degreeType": "btech",
+      "phone": "9667612704",
+      "createdAt": "2026-02-16T18:14:25.417Z",
+      "updatedAt": "2026-02-16T18:14:25.417Z",
+      "__v": 0,
+      "gender": "Female"
+    },
+    {
+      "_id": "69ab16dc21a779f252ac9ba9",
+      "name": "Caretaker BHG",
+      "email": "2023csb1169+1@iitrpr.ac.in",
+      "gender": "female",
+      "role": "caretaker",
+      "hostelId": "69ab0e4e6c440faeab091e3e",
+      "tokenVersion": 0,
+      "createdAt": "2026-03-06T18:03:08.067Z",
+      "updatedAt": "2026-03-06T18:03:08.067Z",
+      "__v": 0
+    },
+    {
+      "_id": "69ab16fa21a779f252ac9bad",
+      "name": "Caretaker",
+      "email": "2023csb1169+2@iitrpr.ac.in",
+      "gender": "male",
+      "role": "caretaker",
+      "hostelId": "69ab0e786c440faeab091e52",
+      "tokenVersion": 0,
+      "createdAt": "2026-03-06T18:03:38.926Z",
+      "updatedAt": "2026-03-06T18:03:38.926Z",
+      "__v": 0
+    },
+    {
+      "_id": "69ab172421a779f252ac9bb1",
+      "name": "Caretaker Raavi",
+      "email": "2023csb1169+3@iitrpr.ac.in",
+      "gender": "female",
+      "role": "caretaker",
+      "hostelId": "69ab0e5c6c440faeab091e43",
+      "tokenVersion": 1772869037655,
+      "createdAt": "2026-03-06T18:04:20.849Z",
+      "updatedAt": "2026-03-07T07:37:17.664Z",
+      "__v": 0
+    },
+    {
+      "_id": "69ab176121a779f252ac9bb5",
+      "name": "Warden BHG",
+      "email": "2023csb1174+1@iitrpr.ac.in",
+      "gender": "female",
+      "role": "warden",
+      "hostelId": "69ab0e4e6c440faeab091e3e",
+      "tokenVersion": 0,
+      "createdAt": "2026-03-06T18:05:21.576Z",
+      "updatedAt": "2026-03-06T18:05:21.576Z",
+      "__v": 0
+    },
+    {
+      "_id": "69ab178121a779f252ac9bb9",
+      "name": "Warden Raavi",
+      "email": "2023csb1174+3@iitrpr.ac.in",
+      "gender": "female",
+      "role": "warden",
+      "hostelId": "69ab0e5c6c440faeab091e43",
+      "tokenVersion": 0,
+      "createdAt": "2026-03-06T18:05:53.539Z",
+      "updatedAt": "2026-03-06T18:05:53.539Z",
+      "__v": 0
+    },
+    {
+      "_id": "69ab17c521a779f252ac9bbd",
+      "name": "Warden Chenab",
+      "email": "2023csb1174+2@iitrpr.ac.in",
+      "gender": "male",
+      "role": "warden",
+      "hostelId": "69ab0e786c440faeab091e52",
+      "tokenVersion": 0,
+      "createdAt": "2026-03-06T18:07:01.135Z",
+      "updatedAt": "2026-03-06T18:07:01.135Z",
+      "__v": 0
+    }
+  ]
+}

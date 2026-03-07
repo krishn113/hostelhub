@@ -39,9 +39,9 @@ const [statusFilter, setStatusFilter] = useState("All");
   };
 
 const filteredComplaints = complaints.filter(c => {
-  const matchesSearch = c.student.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        c.student.roomNumber.toString().includes(searchQuery);
+  const matchesSearch = c.student?.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                        c.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        c.student?.roomNumber?.toString().includes(searchQuery) || false;
   const matchesFloor = floorFilter === "All" || c.floor.toString() === floorFilter;
   const matchesCategory = categoryFilter === "All" || c.category === categoryFilter;
   const matchesStatus = statusFilter === "All" || c.status === statusFilter;
@@ -191,11 +191,11 @@ useEffect(() => {
             <p className="text-sm font-black text-indigo-600 mb-3">{item.preferredSlot}</p>
             <div className="flex items-center justify-center md:justify-start gap-2">
                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">
-                  {item.student.name.charAt(0)}
+                  {item.student?.name?.charAt(0) || '?'}
                </div>
                <div className="text-left">
-                  <p className="text-xs font-bold text-slate-700 truncate w-24">{item.student.name}</p>
-                  <p className="text-[9px] text-slate-400">Room {item.student.roomNumber}</p>
+                  <p className="text-xs font-bold text-slate-700 truncate w-24">{(item.student?.name) || 'Unknown Student'}</p>
+                  <p className="text-[9px] text-slate-400">Room {item.student?.roomNumber || 'N/A'}</p>
                </div>
             </div>
           </div>

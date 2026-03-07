@@ -9,4 +9,9 @@ dotenv.config();
 connectDB();
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`========================================`);
+  console.log(`RESIDENT_HUB_BACKEND_VERSION: 3.1.0`);
+  console.log(`Server running on ${PORT}`);
+  console.log(`========================================`);
+});

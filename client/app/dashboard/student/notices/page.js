@@ -10,6 +10,7 @@ export default function StudentNoticeBoard() {
   const [notices, setNotices] = useState([]);
   const [noticeSearch, setNoticeSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [expandedNoticeId, setExpandedNoticeId] = useState(null);
 
   useEffect(() => {
     if (user?.hostelName) fetchNotices();
@@ -112,10 +113,57 @@ export default function StudentNoticeBoard() {
                     <div className="w-8 h-8 rounded-full bg-slate-100 border flex items-center justify-center text-[10px] font-bold text-slate-500 italic">IITR</div>
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hostel Administration</span>
                   </div>
-                  <button className="text-indigo-600 text-[10px] font-black uppercase hover:underline tracking-widest flex items-center gap-1">
-                    Attachments <Info size={12} />
-                  </button>
+                  {((notice.attachments && notice.attachments.length > 0) || (notice.links && notice.links.length > 0)) && (
+                    <button 
+                      onClick={() => setExpandedNoticeId(expandedNoticeId === notice._id ? null : notice._id)}
+                      className="text-indigo-600 text-[10px] font-black uppercase hover:underline tracking-widest flex items-center gap-1"
+                    >
+                      {expandedNoticeId === notice._id ? 'Hide Attachments' : 'View Attachments'} <Info size={12} />
+                    </button>
+                  )}
                 </div>
+
+                {/* Attachments & Links Dropdown */}
+                {expandedNoticeId === notice._id && ((notice.attachments && notice.attachments.length > 0) || (notice.links && notice.links.length > 0)) && (
+                  <div className="mt-4 pt-4 border-t border-slate-50 space-y-4 bg-slate-50/50 p-4 rounded-2xl">
+                    {notice.attachments && notice.attachments.length > 0 && (
+                      <div>
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Attached Files</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {notice.attachments.map((file, idx) => (
+                            <a 
+                              key={idx} 
+                              href={`http://localhost:5000${file.url}`} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 bg-white border border-slate-200 text-indigo-700 px-3 py-2 rounded-xl text-xs font-bold hover:border-indigo-300 hover:shadow-sm transition"
+                            >
+                              📄 {file.fileName || 'Attachment'}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {notice.links && notice.links.length > 0 && (
+                      <div>
+                         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">External Links</h4>
+                         <div className="flex flex-col gap-2">
+                           {notice.links.map((link, idx) => (
+                             <a 
+                               key={idx} 
+                               href={link.url} 
+                               target="_blank" 
+                               rel="noopener noreferrer"
+                               className="text-indigo-600 text-sm font-medium hover:underline flex items-center gap-1"
+                             >
+                               🔗 {link.label || link.url}
+                             </a>
+                           ))}
+                         </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ))}

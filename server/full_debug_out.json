@@ -1,0 +1,98 @@
+﻿Γ£à Connected to MongoDB
+
+=== ALL HOSTELS ===
+  69ab0e386c440faeab091e39 | Brahmaputra | Boys
+  69ab0e4e6c440faeab091e3e | Brahmaputra | Girls
+  69ab0e5c6c440faeab091e43 | Raavi | Girls
+  69ab0e656c440faeab091e48 | Beas | Boys
+  69ab0e6e6c440faeab091e4d | Satluj | Boys
+  69ab0e786c440faeab091e52 | Chenab | Boys
+
+=== BRAHMAPUTRA CARETAKER ===
+  NOT FOUND - trying email search...
+
+  ALL CARETAKERS:
+    Caretaker BHG | hostelId: 69ab0e4e6c440faeab091e3e
+    Caretaker | hostelId: 69ab0e786c440faeab091e52
+    Caretaker Raavi | hostelId: 69ab0e5c6c440faeab091e43
+
+=== ALL YEAR ALLOCATION RULES ===
+  hostelId: 69ab0e386c440faeab091e39 | year: 2023 | gender: Female | degreeType: B.Tech
+
+=== CARETAKER FOR HOSTEL 69ab0e386c440faeab091e39 ===
+  Γ¥î NOT FOUND
+
+=== SIMULATED RULE QUERY ===
+{
+  "role": "student",
+  "year": "2023",
+  "gender": {
+    "$regex": {}
+  },
+  "degreeType": {
+    "$regex": {}
+  }
+}
+
+=== FULL MONGODB QUERY ===
+{
+  "$or": [
+    {
+      "hostelId": "69ab0e386c440faeab091e39",
+      "role": "student"
+    },
+    {
+      "$or": [
+        {
+          "role": "student",
+          "year": "2023",
+          "gender": {
+            "$regex": {}
+          },
+          "degreeType": {
+            "$regex": {}
+          }
+        }
+      ],
+      "$and": [
+        {
+          "$or": [
+            {
+              "hostelId": null
+            },
+            {
+              "hostelId": {
+                "$exists": false
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+=== QUERY RESULTS (2 students) ===
+  Krishna Agarwal | year: 2023 | gender: Female | degreeType: btech | hostelId: undefined
+  Student1 | year: 2023 | gender: Female | degreeType: B.Tech | hostelId: undefined
+
+=== KRISHNA AGARWAL RAW DOCUMENT ===
+{
+  "_id": "69935a9f487372f006f8a727",
+  "name": "Krishna Agarwal",
+  "email": "2023csb1131@iitrpr.ac.in",
+  "role": "student",
+  "year": "2023",
+  "entryNumber": "2023csb1131",
+  "degreeType": "btech",
+  "phone": "9667612704",
+  "createdAt": "2026-02-16T17:57:51.925Z",
+  "updatedAt": "2026-02-16T18:01:02.805Z",
+  "__v": 0
+}
+
+  Does manual rule match pass? Γ¥î NO
+    year match: 2023 === 2023 ΓåÆ true
+    gender match: "undefined" vs regex /^Female$/i ΓåÆ false
+    degreeType match: "btech" vs regex /^B[^a-zA-Z0-9]*T[^a-zA-Z0-9]*e[^a-zA-Z0-9]*c[^a-zA-Z0-9]*h$/i ΓåÆ true
+    hostelId missing/null: true (value: undefined)

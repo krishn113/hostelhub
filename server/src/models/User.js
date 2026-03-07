@@ -10,6 +10,10 @@ const userSchema = new mongoose.Schema({
   trim: true,
   index: true
   },
+  gender: {
+    type: String,
+    enum: ["Male", "Female", null],
+  },
   password: { type: String, required: true },
   role: { type: String, enum: ["student","caretaker","warden","admin"], default: "student" },
   year: String,
@@ -21,7 +25,8 @@ const userSchema = new mongoose.Schema({
   },
   hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel" },
   tokenVersion: { type: Number, default: 0 },
-  roomNumber: String
+  roomNumber: String,
+  floorNumber: String
 },{ timestamps:true });
 
 export default mongoose.model("User", userSchema);
