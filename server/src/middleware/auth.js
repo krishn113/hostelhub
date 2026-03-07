@@ -10,7 +10,7 @@ export const protect = async (req, res, next) => {
     const token = header.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const user = await User.findById(decoded.id);
+    const user = await User.findById(decoded.id).select("+year +gender +degreeType +hostelId");
     if (!user) return res.status(401).json({ msg: "User not found" });
 
     // Session invalidation check

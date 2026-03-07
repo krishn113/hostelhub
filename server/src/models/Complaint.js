@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const complaintSchema = new mongoose.Schema({
   student: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", required: true },
+  title: { type: String, required: true },
   category: { 
     type: String, 
     enum: ["Electrical", "Plumbing", "Furniture", "Internet", "Cleaning", "Other"],
@@ -12,11 +13,18 @@ const complaintSchema = new mongoose.Schema({
   description: { type: String, required: true },
   status: { 
     type: String, 
-    enum: ["Pending", "Scheduled", "Resolved", "Rejected"], 
+    enum: ["Pending", "Accepted", "Scheduled", "In Progress", "Resolved", "Rejected"],
     default: "Pending" 
   },
-  preferredSlot: { type: String, required: true }, // e.g., "Monday 2pm-4pm"
+  attachments: [{ type: String }],
   technicianDate: { type: Date },
+  // Communication Loop & History Tracking
+  updates: [{
+    status: String,
+    message: String,
+    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    createdAt: { type: Date, default: Date.now }
+  }],
   rejectionReason: { type: String },
 }, { timestamps: true });
 

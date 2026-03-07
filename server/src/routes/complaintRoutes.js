@@ -1,10 +1,15 @@
 import express from "express";
-import { manageComplaint, getComplaints } from "../controllers/complaintController.js";
-import { protect as auth, allowRoles as authorize } from "../middleware/auth.js";
+import { createComplaint, getMyComplaints, manageComplaint } from "../controllers/complaintController.js";
+import { protect } from  "../middleware/auth.js";
+
 
 const router = express.Router();
 
-router.get("/", auth, getComplaints);
-router.patch("/:id", auth, authorize("caretaker", "warden", "admin"), manageComplaint);
+// Student routes
+router.post("/", protect, createComplaint); 
+router.get("/my-complaints", protect, getMyComplaints);
+
+// Caretaker routes
+router.patch("/:id/manage", protect, manageComplaint);
 
 export default router;

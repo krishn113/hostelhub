@@ -29,11 +29,13 @@ app.use(cors({
   credentials: true
 }));
 
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Serve static files from the 'uploads' directory
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
+app.use("/api/complaints", complaintRoutes);
 app.use("/api/notices", noticeRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
