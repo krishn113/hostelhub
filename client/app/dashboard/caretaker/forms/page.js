@@ -125,12 +125,20 @@ export default function CaretakerForms() {
                              {form.status}
                            </span>
                         </div>
-                        <h3 className="text-lg font-bold text-slate-800 mb-1">{form.studentId?.name || "Unknown"} <span className="text-sm font-medium text-slate-500">({form.studentId?.entryNumber || "N/A"})</span></h3>
+                        <h3 className="text-lg font-bold text-slate-800 mb-1">{form.applicantName || form.studentId?.name || "Unknown"} <span className="text-sm font-medium text-slate-500">({form.applicantEntryNo || form.studentId?.entryNumber || "N/A"})</span></h3>
+                        <p className="text-xs text-slate-400 mb-2 font-medium">{form.applicantDepartment || ''}</p>
                         <p className="text-sm text-slate-600 truncate max-w-lg mb-2"><span className="font-semibold text-slate-700">Reason:</span> {form.reason}</p>
-                        <div className="flex gap-6 mt-1 text-xs font-semibold text-slate-500">
+                        <div className="flex gap-4 mt-1 text-xs font-semibold text-slate-500 flex-wrap">
                            <span className="flex gap-1 items-center bg-slate-50 px-2 py-1 rounded-md border border-slate-100">Leaving: <span className="text-slate-800">{new Date(form.leavingDate).toLocaleDateString()}</span></span>
                            <span className="flex gap-1 items-center bg-slate-50 px-2 py-1 rounded-md border border-slate-100">Returning: <span className="text-slate-800">{new Date(form.returnDate).toLocaleDateString()}</span></span>
+                           {form.duration && <span className="flex gap-1 items-center bg-slate-50 px-2 py-1 rounded-md border border-slate-100">Duration: <span className="text-slate-800">{form.duration} days</span></span>}
                         </div>
+                        {(form.nameOfParents || form.addressDuringLeave) && (
+                          <div className="mt-3 bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs text-slate-600">
+                             {form.nameOfParents && <p><span className="font-bold text-slate-700">Parents/Guardians:</span> {form.nameOfParents} ({form.contactOfParents})</p>}
+                             {form.addressDuringLeave && <p className="mt-1"><span className="font-bold text-slate-700">Address during leave:</span> {form.addressDuringLeave}</p>}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))
@@ -163,31 +171,34 @@ export default function CaretakerForms() {
                         <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 mt-2">
                            <div className="space-y-1">
                              <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Applicant</p>
-                             <p className="font-bold text-slate-800 text-sm">{form.studentId?.name || "Unknown"}</p>
-                             <p className="text-xs text-slate-500">{form.studentId?.entryNumber || "N/A"}</p>
+                             <p className="font-bold text-slate-800 text-sm">{form.applicantName || form.studentId?.name || "Unknown"}</p>
+                             <p className="text-xs text-slate-500">{form.applicantEntryNo || form.studentId?.entryNumber || "N/A"}</p>
+                             <p className="text-[10px] text-slate-400">{form.applicantDepartment || ''}</p>
                            </div>
 
                            <div className="space-y-1">
                              <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Guest Info</p>
                              <p className="font-bold text-slate-800 text-sm">{form.guestName}</p>
                              <p className="text-xs text-slate-500">{form.contactNumber}</p>
+                             {form.paymentByGuest && <p className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded shrink-w-fit mt-1 w-fit">Pays directly</p>}
                            </div>
 
                            <div className="space-y-1">
                              <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Booking</p>
-                             <p className="font-bold text-slate-800 text-sm">{form.roomType}</p>
+                             <p className="font-bold text-slate-800 text-sm">{form.roomToBeBooked || form.roomType}</p>
                              <p className="text-xs text-slate-500">{form.numGuests} guests, {form.numRooms} rooms</p>
+                             {form.occupancyType && <p className="text-[10px] text-slate-500 mt-1 italic">{form.occupancyType}</p>}
                            </div>
 
                            <div className="space-y-1 border-l-0 lg:border-l-2 border-slate-100 lg:pl-6">
                               <div className="flex gap-4">
                                 <div className="space-y-1">
                                   <p className="text-xs font-semibold text-slate-400">Check-In</p>
-                                  <p className="text-sm font-bold text-slate-700 bg-slate-50 px-2 py-1 rounded-md">{new Date(form.arrivalDate).toLocaleDateString()}</p>
+                                  <p className="text-sm font-bold text-slate-700 bg-slate-50 px-2 py-1 rounded-md">{new Date(form.arrivalDate).toLocaleDateString()} {form.arrivalTime || ''}</p>
                                 </div>
                                 <div className="space-y-1">
                                   <p className="text-xs font-semibold text-slate-400">Check-Out</p>
-                                  <p className="text-sm font-bold text-slate-700 bg-slate-50 px-2 py-1 rounded-md">{new Date(form.departureDate).toLocaleDateString()}</p>
+                                  <p className="text-sm font-bold text-slate-700 bg-slate-50 px-2 py-1 rounded-md">{new Date(form.departureDate).toLocaleDateString()} {form.departureTime || ''}</p>
                                 </div>
                               </div>
                            </div>

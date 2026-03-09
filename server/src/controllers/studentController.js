@@ -7,14 +7,29 @@ import User from "../models/User.js";
 // @route POST /api/student/forms/leave OR /api/hostel-leaving/apply
 export const applyHostelLeaving = async (req, res) => {
   try {
-    const { reason, leavingDate, returnDate } = req.body;
+    const { 
+      reason, leavingDate, returnDate, 
+      nameOfParents, contactOfParents, addressDuringLeave,
+      applicantName, applicantDepartment, applicantEntryNo, applicantMobileNo
+    } = req.body;
+
+    // Auto calculate duration (in days)
+    const duration = Math.ceil((new Date(returnDate) - new Date(leavingDate)) / (1000 * 60 * 60 * 24));
 
     const application = await HostelLeaving.create({
       studentId: req.user._id,
       hostelId: req.user.hostelId, // Assuming student has a hostelId
       reason,
       leavingDate,
-      returnDate
+      returnDate,
+      nameOfParents,
+      contactOfParents,
+      addressDuringLeave,
+      duration,
+      applicantName,
+      applicantDepartment,
+      applicantEntryNo,
+      applicantMobileNo
     });
 
     res.status(201).json({ message: "Hostel leaving application submitted", application });

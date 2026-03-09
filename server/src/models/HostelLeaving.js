@@ -18,6 +18,20 @@ const hostelLeavingSchema = new mongoose.Schema({
 
   returnDate: Date,
 
+  nameOfParents: String,
+
+  contactOfParents: String,
+
+  addressDuringLeave: String,
+
+  duration: Number,
+
+  // Prefetched Applicant Data
+  applicantName: String,
+  applicantDepartment: String,
+  applicantEntryNo: String,
+  applicantMobileNo: String,
+
   status: {
     type: String,
     default: "Pending"

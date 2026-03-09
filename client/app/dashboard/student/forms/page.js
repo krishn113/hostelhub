@@ -4,10 +4,29 @@ import DashboardLayout from "@/components/DashboardLayout";
 import HostelLeavingModal from "@/components/forms/HostelLeavingModal";
 import GuestHouseModal from "@/components/forms/GuestHouseModal";
 import { DoorOpen, Building2, History, Info } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function StudentForms() {
-  const [leaveForm, setLeaveForm] = useState({ reason: "", leavingDate: "", returnDate: "" });
-  const [guestForm, setGuestForm] = useState({ guestName: "", gender: "", address: "", contactNumber: "", numGuests: "", numRooms: "", roomType: "", arrivalDate: "", departureDate: "", purpose: "" });
+  const { user } = useAuth();
+  
+  const initialLeaveForm = { 
+    reason: "", leavingDate: "", returnDate: "", 
+    nameOfParents: "", contactOfParents: "", addressDuringLeave: "",
+    applicantName: user?.name || "", applicantDepartment: user?.department || "", 
+    applicantEntryNo: user?.entryNumber || "", applicantMobileNo: user?.phone || ""
+  };
+  
+  const [leaveForm, setLeaveForm] = useState(initialLeaveForm);
+  
+  const initialGuestForm = { 
+    guestName: "", gender: "", address: "", contactNumber: "", 
+    numGuests: "", numRooms: "", occupancyType: "", roomToBeBooked: "", paymentByGuest: false,
+    arrivalDate: "", arrivalTime: "", departureDate: "", departureTime: "", purpose: "",
+    applicantName: user?.name || "", applicantDepartment: user?.department || "", 
+    applicantEntryNo: user?.entryNumber || "", applicantMobileNo: user?.phone || ""
+  };
+  
+  const [guestForm, setGuestForm] = useState(initialGuestForm);
 
   const [myForms, setMyForms] = useState({ leavingForms: [], guestHouseForms: [] });
   const [loading, setLoading] = useState(true);
@@ -48,7 +67,7 @@ export default function StudentForms() {
 
     if (res.ok) {
       alert("Leave request submitted successfully.");
-      setLeaveForm({ reason: "", leavingDate: "", returnDate: "" });
+      setLeaveForm(initialLeaveForm);
       setShowLeaveModal(false);
       fetchMyForms();
     } else {
@@ -67,7 +86,7 @@ export default function StudentForms() {
 
     if (res.ok) {
       alert("Guest house request submitted successfully.");
-      setGuestForm({ guestName: "", gender: "", address: "", contactNumber: "", numGuests: "", numRooms: "", roomType: "", arrivalDate: "", departureDate: "", purpose: "" });
+      setGuestForm(initialGuestForm);
       setShowGuestModal(false);
       fetchMyForms();
     } else {
@@ -170,7 +189,19 @@ export default function StudentForms() {
                         <div className="pt-4 flex items-center gap-6 mt-2 border-t border-slate-50 text-sm font-medium text-slate-500">
                            <p>Leaving: <span className="text-slate-800 font-bold">{new Date(form.leavingDate).toLocaleDateString()}</span></p>
                            <p>Returning: <span className="text-slate-800 font-bold">{new Date(form.returnDate).toLocaleDateString()}</span></p>
+                           {form.duration && <p>Duration: <span className="text-slate-800 font-bold">{form.duration} days</span></p>}
                         </div>
+                        {form.nameOfParents && (
+                          <div className="flex items-center gap-6 text-sm font-medium text-slate-500 mt-2">
+                             <p>Parents/Guardians: <span className="text-slate-800 font-bold">{form.nameOfParents}</span></p>
+                             <p>Contact: <span className="text-slate-800 font-bold">{form.contactOfParents}</span></p>
+                          </div>
+                        )}
+                        {form.addressDuringLeave && (
+                          <div className="text-sm font-medium text-slate-500 mt-2">
+                             <p>Address: <span className="text-slate-800 font-bold">{form.addressDuringLeave}</span></p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -191,15 +222,22 @@ export default function StudentForms() {
                         </div>
                         <h3 className="text-2xl font-black text-slate-900 tracking-tight">{form.guestName} <span className="text-sm text-slate-400 font-medium tracking-normal ml-2">({form.purpose})</span></h3>
                         
-                        <div className="pt-4 flex items-center gap-6 mt-2 border-t border-slate-50 text-sm font-medium text-slate-500">
-                           <p>Type: <span className="text-slate-800 font-bold">{form.roomType}</span></p>
+                        <div className="pt-4 flex items-center gap-6 mt-2 border-t border-slate-50 text-sm font-medium text-slate-500 flex-wrap">
+                           <p>Room: <span className="text-slate-800 font-bold">{form.roomToBeBooked || form.roomType || 'N/A'}</span></p>
                            <p>Guests: <span className="text-slate-800 font-bold">{form.numGuests}</span></p>
                            <p>Rooms: <span className="text-slate-800 font-bold">{form.numRooms}</span></p>
+                           {form.occupancyType && <p>Occupancy: <span className="text-slate-800 font-bold">{form.occupancyType}</span></p>}
                         </div>
-                        <div className="flex items-center gap-6 text-sm font-medium text-slate-500 mt-2">
-                           <p>Check-In: <span className="text-slate-800 font-bold">{new Date(form.arrivalDate).toLocaleDateString()}</span></p>
-                           <p>Check-Out: <span className="text-slate-800 font-bold">{new Date(form.departureDate).toLocaleDateString()}</span></p>
+                        <div className="flex items-center gap-6 text-sm font-medium text-slate-500 mt-2 flex-wrap">
+                           <p>Check-In: <span className="text-slate-800 font-bold">{new Date(form.arrivalDate).toLocaleDateString()} {form.arrivalTime || ''}</span></p>
+                           <p>Check-Out: <span className="text-slate-800 font-bold">{new Date(form.departureDate).toLocaleDateString()} {form.departureTime || ''}</span></p>
+                           {form.paymentByGuest !== undefined && <p>Payment: <span className="text-slate-800 font-bold">{form.paymentByGuest ? 'By Guest' : 'By Applicant'}</span></p>}
                         </div>
+                        {form.applicantName && (
+                          <div className="mt-3 bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs text-slate-600">
+                             <p><span className="font-bold text-slate-700">Applicant:</span> {form.applicantName} ({form.applicantEntryNo}) - {form.applicantDepartment}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

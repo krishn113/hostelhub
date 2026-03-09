@@ -24,12 +24,22 @@ const GuestHouseBookingSchema = new mongoose.Schema({
 
   numGuests: Number,
   numRooms: Number,
-  roomType: String,
+  occupancyType: String, // e.g., "1 single, 1 double"
+  roomToBeBooked: String, // e.g., "Executive Suite - Cat-B Rs.3500/-"
+  paymentByGuest: Boolean,
 
   arrivalDate: Date,
+  arrivalTime: String,
   departureDate: Date,
+  departureTime: String,
 
   purpose: String,
+
+  // Prefetched Applicant Data
+  applicantName: String,
+  applicantDepartment: String,
+  applicantEntryNo: String,
+  applicantMobileNo: String,
 
   status: {
     type: String,

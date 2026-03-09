@@ -18,10 +18,10 @@ export default function GuestHouseModal({
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 scrollbar-hide">
+      <div className="relative w-full max-w-4xl bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
         
         {/* Header */}
-        <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 sticky top-0 z-10">
+        <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div>
             <h2 className="text-2xl font-black text-slate-800 tracking-tight">Guest House</h2>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Booking Form</p>
@@ -35,12 +35,69 @@ export default function GuestHouseModal({
         </div>
 
         {/* Body */}
-        <div className="p-8">
+        <div className="p-8 overflow-y-auto">
           <form onSubmit={onSubmit} className="space-y-8">
             
-            {/* Guest Info Section */}
+            {/* Applicant Info Section */}
             <div className="space-y-6">
-              <h3 className="text-lg font-bold text-slate-700 border-b border-slate-100 pb-2">1. Guest Information</h3>
+              <h3 className="text-lg font-bold text-slate-700 border-b border-slate-100 pb-2">1. Applicant Details</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2 tracking-widest">Applicant Name</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm mt-1 focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Enter your name"
+                    value={form.applicantName}
+                    onChange={(e) => setForm({ ...form, applicantName: e.target.value })}
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2 tracking-widest">Department</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm mt-1 focus:ring-2 focus:ring-indigo-500"
+                    placeholder="E.g., Computer Science"
+                    value={form.applicantDepartment}
+                    onChange={(e) => setForm({ ...form, applicantDepartment: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2 tracking-widest">Entry Number</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm mt-1 focus:ring-2 focus:ring-indigo-500"
+                    placeholder="E.g., 2021CSB1001"
+                    value={form.applicantEntryNo}
+                    onChange={(e) => setForm({ ...form, applicantEntryNo: e.target.value })}
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2 tracking-widest">Mobile Number</label>
+                  <input
+                    type="tel"
+                    required
+                    className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm mt-1 focus:ring-2 focus:ring-indigo-500"
+                    placeholder="E.g., +91 9876543210"
+                    value={form.applicantMobileNo}
+                    onChange={(e) => setForm({ ...form, applicantMobileNo: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Guest Info Section */}
+            <div className="space-y-6 pt-4">
+              <h3 className="text-lg font-bold text-slate-700 border-b border-slate-100 pb-2">2. Guest Information</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -98,20 +155,27 @@ export default function GuestHouseModal({
 
             {/* Room Info Section */}
             <div className="space-y-6 pt-4">
-              <h3 className="text-lg font-bold text-slate-700 border-b border-slate-100 pb-2">2. Booking Details</h3>
+              <h3 className="text-lg font-bold text-slate-700 border-b border-slate-100 pb-2">3. Booking Details</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2 tracking-widest">Room Type</label>
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2 tracking-widest">Room Category</label>
                   <select
                     required
                     className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm mt-1 focus:ring-2 focus:ring-indigo-500 appearance-none"
-                    value={form.roomType}
-                    onChange={(e) => setForm({ ...form, roomType: e.target.value })}
+                    value={form.roomToBeBooked}
+                    onChange={(e) => setForm({ ...form, roomToBeBooked: e.target.value })}
                   >
-                    <option value="">Choose Room</option>
-                    <option value="Executive Suite">Executive Suite</option>
-                    <option value="Business Room">Business Room</option>
+                    <option value="">Choose Category</option>
+                    <optgroup label="Executive Suite">
+                      <option value="Executive Suite - Cat-A (Free)">Cat-A (Free)</option>
+                      <option value="Executive Suite - Cat-B (Rs. 3500/-)">Cat-B (Rs. 3500/-)</option>
+                    </optgroup>
+                    <optgroup label="Business Rooms">
+                      <option value="Business Room - Cat-A (Free)">Cat-A (Free)</option>
+                      <option value="Business Room - B-1 (Rs. 2000/-)">B-1 (Rs. 2000/-)</option>
+                      <option value="Business Room - B-2 (Rs. 1200/-)">B-2 (Rs. 1200/-)</option>
+                    </optgroup>
                   </select>
                 </div>
                 
@@ -142,27 +206,57 @@ export default function GuestHouseModal({
                 </div>
               </div>
 
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-2 tracking-widest">Occupancy Format</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm mt-1 focus:ring-2 focus:ring-indigo-500"
+                  placeholder="e.g., 1 single room, 1 double room"
+                  value={form.occupancyType}
+                  onChange={(e) => setForm({ ...form, occupancyType: e.target.value })}
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2 tracking-widest">Arrival Date</label>
-                  <input
-                    type="date"
-                    required
-                    className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm mt-1 focus:ring-2 focus:ring-indigo-500 text-slate-700"
-                    value={form.arrivalDate}
-                    onChange={(e) => setForm({ ...form, arrivalDate: e.target.value })}
-                  />
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2 tracking-widest">Arrival Check-In</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      required
+                      className="w-2/3 bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm mt-1 focus:ring-2 focus:ring-indigo-500 text-slate-700"
+                      value={form.arrivalDate}
+                      onChange={(e) => setForm({ ...form, arrivalDate: e.target.value })}
+                    />
+                    <input
+                      type="time"
+                      required
+                      className="w-1/3 bg-slate-50 border-none rounded-2xl py-4 px-4 text-sm mt-1 focus:ring-2 focus:ring-indigo-500 text-slate-700"
+                      value={form.arrivalTime}
+                      onChange={(e) => setForm({ ...form, arrivalTime: e.target.value })}
+                    />
+                  </div>
                 </div>
                 
                 <div>
-                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2 tracking-widest">Departure Date</label>
-                  <input
-                    type="date"
-                    required
-                    className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm mt-1 focus:ring-2 focus:ring-indigo-500 text-slate-700"
-                    value={form.departureDate}
-                    onChange={(e) => setForm({ ...form, departureDate: e.target.value })}
-                  />
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2 tracking-widest">Departure Check-Out</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      required
+                      className="w-2/3 bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm mt-1 focus:ring-2 focus:ring-indigo-500 text-slate-700"
+                      value={form.departureDate}
+                      onChange={(e) => setForm({ ...form, departureDate: e.target.value })}
+                    />
+                    <input
+                      type="time"
+                      required
+                      className="w-1/3 bg-slate-50 border-none rounded-2xl py-4 px-4 text-sm mt-1 focus:ring-2 focus:ring-indigo-500 text-slate-700"
+                      value={form.departureTime}
+                      onChange={(e) => setForm({ ...form, departureTime: e.target.value })}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -176,6 +270,19 @@ export default function GuestHouseModal({
                   value={form.purpose}
                   onChange={(e) => setForm({ ...form, purpose: e.target.value })}
                 />
+              </div>
+
+              <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 mt-4">
+                <input
+                  type="checkbox"
+                  id="paymentByGuest"
+                  checked={form.paymentByGuest}
+                  onChange={(e) => setForm({ ...form, paymentByGuest: e.target.checked })}
+                  className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                />
+                <label htmlFor="paymentByGuest" className="text-sm font-bold text-slate-700 cursor-pointer">
+                  Payment will be made directly by the guest
+                </label>
               </div>
             </div>
 
