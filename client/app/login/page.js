@@ -44,9 +44,13 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-100 px-4">
+    <div
+      className="min-h-screen flex items-center justify-center px-4 relative"
+      style={{ backgroundImage: "url('/sab.jpg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}
+    >
+      <div className="absolute inset-0 bg-slate-900/50"></div>
       
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl">
+      <div className="w-full max-w-md bg-white/20 backdrop-blur-md border border-white/30 p-8 rounded-2xl shadow-xl relative z-10">
 
         {/* LOGO */}
         <div className="flex justify-center mb-4">
@@ -57,7 +61,7 @@ export default function Login() {
           />
         </div>
 
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+        <h2 className="text-2xl font-bold text-center text-white mb-6">
           Hostel Management Portal
         </h2>
 
@@ -83,7 +87,7 @@ export default function Login() {
 
             <a
               onClick={() => router.push("/forgot-password")}
-              className="text-sm text-indigo-600 hover:underline"
+              className="text-sm text-white hover:underline cursor-pointer"
             >
               Forgot Password?
             </a>
@@ -100,11 +104,11 @@ export default function Login() {
 
 
     {/* SIGNUP LINK */}
-    <p className="text-center text-sm text-gray-600">
+    <p className="text-center text-sm text-white">
       Don't have an account?{" "}
       <span
         onClick={() => router.push("/signup")}
-        className="text-indigo-600 font-medium cursor-pointer hover:underline"
+        className="text-white font-bold cursor-pointer hover:underline"
       >
         Sign up
       </span>
@@ -112,7 +116,7 @@ export default function Login() {
 
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
+        <p className="text-center text-xs text-white mt-6 font-medium">
           Only IIT Ropar email accounts are allowed
         </p>
 

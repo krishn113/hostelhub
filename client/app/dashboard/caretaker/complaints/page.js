@@ -36,7 +36,7 @@ const [statusFilter, setStatusFilter] = useState("All");
     try {
       await API.patch(`/complaints/${id}/manage`, { action, ...data });
       // Refresh data
-      const res = await api.get("/complaints");
+      const res = await API.get("/complaints");
       setComplaints(res.data);
     } catch (err) { alert("Action failed"); }
   };

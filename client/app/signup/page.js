@@ -113,16 +113,20 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-10 bg-gradient-to-br from-indigo-50 to-blue-100 px-4">
+    <div
+      className="min-h-screen flex items-center justify-center py-10 px-4 relative"
+      style={{ backgroundImage: "url('/sab.jpg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}
+    >
+      <div className="absolute inset-0 bg-slate-900/50"></div>
 
-      <div className="w-full max-w-lg bg-white p-6 rounded-2xl shadow-xl">
+      <div className="w-full max-w-lg bg-white/20 backdrop-blur-md border border-white/30 p-6 rounded-2xl shadow-xl relative z-10">
 
         {/* Logo */}
         <div className="flex justify-center mb-5">
           <img src="/iitrpr-logo.png" className="h-14" />
         </div>
 
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+        <h2 className="text-2xl font-bold text-center text-white mb-6">
           Student Signup
         </h2>
 
@@ -225,11 +229,11 @@ export default function Signup() {
 
         </div>
 
-        <p className="text-center text-sm text-gray-600 mt-6">
+        <p className="text-center text-sm text-white mt-6">
           Already have an account?{" "}
           <span
             onClick={() => router.push("/login")}
-            className="text-indigo-600 cursor-pointer hover:underline"
+            className="text-white font-bold cursor-pointer hover:underline"
           >
             Login
           </span>
