@@ -1,6 +1,6 @@
 import express from "express";
 import { protect, allowRoles } from "../middleware/auth.js";
-import { applyHostelLeaving, bookGuestHouse, getMyForms } from "../controllers/studentController.js";
+import { applyHostelLeaving, bookGuestHouse, getMyForms, createPost, getPosts, markResolved } from "../controllers/studentController.js";
 
 const router = express.Router();
 
@@ -12,5 +12,9 @@ router.post("/guesthouse/book", protect, allowRoles("student"), bookGuestHouse);
 
 // Get student's forms
 router.get("/forms", protect, allowRoles("student"), getMyForms);
+
+router.post("/lost-found", protect, allowRoles("student"), createPost);
+router.get("/lost-found", protect, allowRoles("student"), getPosts);
+router.put("/lost-found/:id/resolve", protect, allowRoles("student"), markResolved);
 
 export default router;

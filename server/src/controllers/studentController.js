@@ -3,6 +3,7 @@ import GuestHouseBooking from "../models/GuestHouseBooking.js";
 import generatePDF from "../utils/generatePDF.js";
 import { sendGuestHouseMail } from "../utils/sendMail.js";
 import User from "../models/User.js";
+import LostFound from "../models/LostFound.js";
 
 // @route POST /api/student/forms/leave OR /api/hostel-leaving/apply
 export const applyHostelLeaving = async (req, res) => {
@@ -83,5 +84,60 @@ export const getMyForms = async (req, res) => {
   } catch (error) {
     console.error("Error fetching my forms:", error);
     res.status(500).json({ error: "Failed to fetch forms" });
+  }
+};
+
+export const createPost = async (req, res) => {
+  try {
+
+    const post = await LostFound.create({
+      title: req.body.title,
+      description: req.body.description,
+      type: req.body.type, // lost or found
+      visibility: req.body.visibility, // global or hostel
+      contactNumber: req.body.contactNumber,
+      postedBy: req.user._id,
+      hostelId: req.user.hostelId
+    });
+
+    res.json(post);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getPosts = async (req, res) => {
+  try {
+
+    const posts = await LostFound.find({
+      status: "active",
+      $or: [
+        { visibility: "global" },
+        { visibility: "hostel", hostelId: req.user.hostelId }
+      ]
+    })
+    .populate("postedBy", "name")
+    .sort({ createdAt: -1 });
+
+    res.json(posts);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const markResolved = async (req, res) => {
+  try {
+
+    await LostFound.findByIdAndUpdate(
+      req.params.id,
+      { status: "resolved" }
+    );
+
+    res.json({ message: "Item marked resolved" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };

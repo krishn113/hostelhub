@@ -3,19 +3,23 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Building2, Calendar, Clock, User, Phone, CreditCard } from "lucide-react";
+import { Search } from "lucide-react";
 
 export default function WardenForms() {
   const [guestForms, setGuestForms] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Filter States
-  const [arrivalFilter, setArrivalFilter] = useState("");
-  const [departureFilter, setDepartureFilter] = useState("");
+  const [search, setSearch] = useState("");
 
   const fetchForms = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
+      
+      const guessRes = await fetch("http://localhost:5000/api/warden/forms/guesthouse", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
 
       if (guessRes.ok) {
         const data = await guessRes.json();
@@ -43,10 +47,17 @@ export default function WardenForms() {
   };
 
   // Filter Logic
-  const filteredForms = guestForms.filter(form => {
-    const arrivalMatch = !arrivalFilter || new Date(form.arrivalDate).toLocaleDateString() === new Date(arrivalFilter).toLocaleDateString();
-    const departureMatch = !departureFilter || new Date(form.departureDate).toLocaleDateString() === new Date(departureFilter).toLocaleDateString();
-    return arrivalMatch && departureMatch;
+  const filteredForms = guestForms.filter((form) => {
+    const query = search.toLowerCase();
+
+    return (
+      form.guestName?.toLowerCase().includes(query) ||
+      form.applicantName?.toLowerCase().includes(query) ||
+      form.studentId?.name?.toLowerCase().includes(query) ||
+      form.applicantEntryNo?.toLowerCase().includes(query) ||
+      form.studentId?.entryNumber?.toLowerCase().includes(query) ||
+      form.contactNumber?.toLowerCase().includes(query)
+    );
   });
 
   return (
@@ -67,38 +78,31 @@ export default function WardenForms() {
             </div>
           </div>
 
-          {/* FILTERS UI */}
-          <div className="flex flex-col sm:flex-row gap-4 bg-white p-3 rounded-[2rem] border border-slate-200 shadow-sm w-fit">
-            <div className="flex items-center gap-3 px-4">
-               <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Arrival:</span>
-               <input 
-                 type="date"
-                 value={arrivalFilter}
-                 onChange={(e) => setArrivalFilter(e.target.value)}
-                 className="bg-transparent border-none text-[10px] font-black text-slate-700 focus:ring-0 cursor-pointer p-0"
-               />
-               {arrivalFilter && (
-                 <button onClick={() => setArrivalFilter("")} className="text-slate-400 hover:text-rose-500">
-                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                 </button>
-               )}
-            </div>
-            <div className="hidden sm:block h-6 w-px bg-slate-200" />
-            <div className="flex items-center gap-3 px-4">
-               <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Departure:</span>
-               <input 
-                 type="date"
-                 value={departureFilter}
-                 onChange={(e) => setDepartureFilter(e.target.value)}
-                 className="bg-transparent border-none text-[10px] font-black text-slate-700 focus:ring-0 cursor-pointer p-0"
-               />
-               {departureFilter && (
-                 <button onClick={() => setDepartureFilter("")} className="text-slate-400 hover:text-rose-500">
-                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                 </button>
-               )}
-            </div>
+        {/* SEARCH BAR */}
+        <div className="bg-white p-3 rounded-[2rem] border border-slate-200 shadow-sm w-full md:w-96">
+          <div className="flex items-center gap-3 px-4">
+            
+            <Search size={18} className="text-slate-400" />
+
+            <input
+              type="text"
+              placeholder="Search guest, applicant, entry no, phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-transparent outline-none text-sm font-medium text-slate-700 placeholder:text-slate-400"
+            />
+
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="text-slate-400 hover:text-rose-500 text-sm font-bold"
+              >
+                ✕
+              </button>
+            )}
+
           </div>
+        </div>
         </header>
 
         <div className="max-w-6xl mx-auto space-y-6">

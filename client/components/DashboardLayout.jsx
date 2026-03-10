@@ -2,212 +2,301 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut } from "lucide-react";
+import {
+  LogOut, Menu, X,
+  LayoutDashboard, Bell, Wrench, FileText, Search,
+  Users, ClipboardList, Building2, UserCog, Home, Mail, Phone, DoorOpen
+} from "lucide-react";
+
+// Map icon keys to lucide components
+const ICONS = {
+  home: LayoutDashboard,
+  notices: Bell,
+  complaints: Wrench,
+  forms: FileText,
+  lostfound: Search,
+  students: Users,
+  complaints2: ClipboardList,
+  allocations: Building2,
+  staff: UserCog,
+  hostel: Home,
+};
 
 export default function DashboardLayout({ children, role }) {
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // 1. Define separate menus for each role
   const menus = {
     student: [
-      { label: "Overview", icon: "🏠", path: "/dashboard/student" },
-      { label: "Notices", icon: "📢", path: "/dashboard/student/notices" },
-      { label: "Complaints", icon: "🛠️", path: "/dashboard/student/complaints" },
-      { label: "Forms", icon: "📄", path: "/dashboard/student/forms" },
+      { label: "Overview",    iconKey: "home",       path: "/dashboard/student" },
+      { label: "Notices",     iconKey: "notices",    path: "/dashboard/student/notices" },
+      { label: "Complaints",  iconKey: "complaints", path: "/dashboard/student/complaints" },
+      { label: "Forms",       iconKey: "forms",      path: "/dashboard/student/forms" },
+      { label: "Lost & Found",iconKey: "lostfound",  path: "/dashboard/student/lost-found" },
     ],
     caretaker: [
-      { label: "Overview", icon: "🏠", path: "/dashboard/caretaker" },
-      { label: "Students Lists", icon: "📊", path: "/dashboard/caretaker/students" },
-      { label: "Complaints", icon: "🛠️", path: "/dashboard/caretaker/complaints" },
-      { label: "Notices", icon: "📝", path: "/dashboard/caretaker/notices" },
-      { label: "Forms", icon: "📄", path: "/dashboard/caretaker/forms" },
+      { label: "Overview",       iconKey: "home",       path: "/dashboard/caretaker" },
+      { label: "Students Lists", iconKey: "students",   path: "/dashboard/caretaker/students" },
+      { label: "Complaints",     iconKey: "complaints", path: "/dashboard/caretaker/complaints" },
+      { label: "Notices",        iconKey: "notices",    path: "/dashboard/caretaker/notices" },
+      { label: "Forms",          iconKey: "forms",      path: "/dashboard/caretaker/forms" },
     ],
     warden: [
-      { label: "Overview", icon: "🏠", path: "/dashboard/warden" },
-      { label: "Students Lists", icon: "📊", path: "/dashboard/warden/students" },
-      { label: "Complaints", icon: "🛠️", path: "/dashboard/warden/complaints" },
-      { label: "Notices", icon: "📝", path: "/dashboard/warden/notices" },
-      { label: "Forms", icon: "📄", path: "/dashboard/warden/forms" },
+      { label: "Overview",       iconKey: "home",       path: "/dashboard/warden" },
+      { label: "Students Lists", iconKey: "students",   path: "/dashboard/warden/students" },
+      { label: "Complaints",     iconKey: "complaints", path: "/dashboard/warden/complaints" },
+      { label: "Notices",        iconKey: "notices",    path: "/dashboard/warden/notices" },
+      { label: "Forms",          iconKey: "forms",      path: "/dashboard/warden/forms" },
     ],
     admin: [
-      { label: "Overview", icon: "🏠", path: "/dashboard/admin" },
-      { label: "Allocations", icon: "📊", path: "/dashboard/admin/allocations" },
-      { label: "Hostels", icon: "🛠️", path: "/dashboard/admin/hostels" },
-      { label: "Staff", icon: "📝", path: "/dashboard/admin/staff" },
-    ]
+      { label: "Overview",    iconKey: "home",        path: "/dashboard/admin" },
+      { label: "Allocations", iconKey: "allocations", path: "/dashboard/admin/allocations" },
+      { label: "Hostels",     iconKey: "hostel",      path: "/dashboard/admin/hostels" },
+      { label: "Staff",       iconKey: "staff",       path: "/dashboard/admin/staff" },
+    ],
   };
 
-  // Select the current menu based on the role prop
   const currentMenu = menus[role] || [];
+
+  const handleNav = (path) => {
+    router.push(path);
+    setSidebarOpen(false);
+  };
+
+  const SidebarContent = () => (
+    <>
+      {/* Logo */}
+      <div className="p-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-black text-indigo-600">HostelHub</h2>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Management System</p>
+        </div>
+        {/* Close button — mobile only */}
+        <button
+          className="md:hidden p-2 rounded-xl hover:bg-slate-100 text-slate-500"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <X size={20} />
+        </button>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+        {currentMenu.map((item) => {
+          const Icon = ICONS[item.iconKey] || LayoutDashboard;
+          const active = pathname === item.path;
+          return (
+            <button
+              key={item.label}
+              onClick={() => handleNav(item.path)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all text-sm ${
+                active
+                  ? "bg-indigo-50 text-indigo-600"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+              }`}
+            >
+              <Icon size={18} className={active ? "text-indigo-500" : "text-slate-400"} />
+              {item.label}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Logout */}
+      <div className="p-4 border-t border-slate-100">
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-4 py-3 text-rose-500 font-bold hover:bg-rose-50 rounded-2xl transition-all text-sm"
+        >
+          <DoorOpen size={18} />
+          Logout
+        </button>
+      </div>
+    </>
+  );
 
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans">
-      {/* SIDEBAR */}
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col fixed h-full z-20">
-        <div className="p-6">
-          <h2 className="text-xl font-black text-indigo-600 ">HostelHub</h2>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Management System</p>
-        </div>
 
-        <nav className="flex-1 px-4 space-y-1">
-          {currentMenu.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => router.push(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all ${
-                pathname === item.path 
-                  ? "bg-indigo-50 text-indigo-600" 
-                  : "text-slate-500 hover:bg-slate-50"
-              }`}
-            >
-              <span className="text-xl">{item.icon}</span>
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-slate-100">
-          <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 text-rose-500 font-bold hover:bg-rose-50 rounded-2xl">
-            <span>🚪</span> Logout
-          </button>
-        </div>
+      {/* ── DESKTOP SIDEBAR (always visible ≥ md) ── */}
+      <aside className="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col fixed h-full z-20">
+        <SidebarContent />
       </aside>
 
-      {/* MAIN CONTENT */}
-      <div className="flex-1 ml-64">
-        {/* DYNAMIC TOP NAV */}
-        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-10 px-8 flex justify-between items-center">
-          <div className="flex-1 flex items-center">
+      {/* ── MOBILE OVERLAY ── */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* ── MOBILE DRAWER ── */}
+      <aside
+        className={`fixed top-0 left-0 h-full w-72 bg-white border-r border-slate-200 flex flex-col z-40 transform transition-transform duration-300 md:hidden ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <SidebarContent />
+      </aside>
+
+      {/* ── MAIN CONTENT ── */}
+      <div className="flex-1 md:ml-64 min-w-0">
+
+        {/* HEADER */}
+        <header className="h-16 md:h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-10 px-4 md:px-8 flex justify-between items-center gap-4">
+
+          {/* Left: burger (mobile) + hostel name */}
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Burger — mobile only */}
+            <button
+              className="md:hidden p-2 rounded-xl hover:bg-slate-100 text-slate-600 shrink-0"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu size={22} />
+            </button>
+
             {user?.hostelName && (
-              <h2 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
-                🏠 {user.hostelName} 
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600 font-bold uppercase tracking-widest">
-                  {user.role === 'student' ? 'Hostel' : role}
+              <h2 className="text-base md:text-xl font-black text-slate-800 tracking-tight flex items-center gap-2 truncate">
+                <Home size={18} className="text-indigo-400 shrink-0" />
+                <span className="truncate">{user.hostelName}</span>
+                <span className="hidden sm:inline text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600 font-bold uppercase tracking-widest shrink-0">
+                  {user.role === "student" ? "Hostel" : role}
                 </span>
               </h2>
             )}
           </div>
 
-          <div 
+          {/* Right: profile pill */}
+          <div
             onClick={() => setIsProfileModalOpen(true)}
-            className="flex items-center gap-4 bg-slate-100 px-4 py-2 rounded-2xl border border-slate-200 cursor-pointer hover:bg-slate-200 transition"
+            className="flex items-center gap-3 bg-slate-100 px-3 py-2 rounded-2xl border border-slate-200 cursor-pointer hover:bg-slate-200 transition shrink-0"
           >
-            <div className="text-right">
-              {/* This label now changes based on the role prop */}
+            <div className="text-right hidden sm:block">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
-                {user?.role === "caretaker" || user?.role === "warden" 
-                  ? `${role} ${user?.hostelName || ''}`.trim()
+                {user?.role === "caretaker" || user?.role === "warden"
+                  ? `${role} ${user?.hostelName || ""}`.trim()
                   : role}
               </p>
               <p className="text-sm font-bold text-slate-800">{user?.name}</p>
             </div>
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-100">
+            <div className="w-9 h-9 md:w-10 md:h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-100 text-sm">
               {user?.name?.[0]}
             </div>
           </div>
         </header>
 
-        <main className="p-8">{children}</main>
+        {/* PAGE CONTENT */}
+        <main className="p-4 md:p-8">{children}</main>
       </div>
 
-      {/* Global Profile Modal */}
+      {/* ── PROFILE MODAL ── */}
       {isProfileModalOpen && user && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white max-w-sm w-full rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100 scale-in-center">
+          <div className="bg-white max-w-sm w-full rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100">
+            {/* Header */}
             <div className="bg-indigo-600 p-8 text-center relative overflow-hidden">
-               <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-500 to-indigo-700"></div>
-               <div className="relative z-10">
-                 <div className="w-20 h-20 bg-white rounded-full mx-auto flex items-center justify-center text-3xl font-black text-indigo-600 shadow-xl border-4 border-indigo-100 mb-3">
-                   {user.name?.charAt(0) || 'U'}
-                 </div>
-                 <h2 className="text-2xl font-black text-white leading-tight">{user.name}</h2>
-                 <p className="text-indigo-100 text-sm font-medium mt-1 capitalize">
-                   {user.role}
-                 </p>
-               </div>
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-500 to-indigo-700" />
+              <div className="relative z-10">
+                <div className="w-20 h-20 bg-white rounded-full mx-auto flex items-center justify-center text-3xl font-black text-indigo-600 shadow-xl border-4 border-indigo-100 mb-3">
+                  {user.name?.charAt(0) || "U"}
+                </div>
+                <h2 className="text-2xl font-black text-white leading-tight">{user.name}</h2>
+                <p className="text-indigo-100 text-sm font-medium mt-1 capitalize">{user.role}</p>
+              </div>
             </div>
+
+            {/* Body */}
             <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
-               {(user.role === 'caretaker' || user.role === 'warden' || user.role === 'student') && (
-                 <div>
-                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">
-                      {user.role === 'student' ? 'Assigned Location' : 'Assigned Hostel'}
-                    </p>
-                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                         <span className="text-slate-800 font-bold">🏠 {user.hostelName || 'Unassigned'}</span>
-                         {user.hostelType && (
-                           <span className="text-[9px] font-black uppercase tracking-widest bg-indigo-100 text-indigo-600 px-2 py-1 rounded-md">
-                             {user.hostelType} Hostel
-                           </span>
-                         )}
-                      </div>
-                      {user.role === 'student' && user.roomNumber && (
-                         <div className="pt-2 border-t border-slate-200/60 mt-1">
-                            <span className="text-slate-700 font-bold text-sm">🚪 Room {user.roomNumber}</span>
-                            {user.floorNumber && <span className="text-slate-500 font-medium text-xs ml-2">(Floor {user.floorNumber})</span>}
-                         </div>
+              {(user.role === "caretaker" || user.role === "warden" || user.role === "student") && (
+                <div>
+                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">
+                    {user.role === "student" ? "Assigned Location" : "Assigned Hostel"}
+                  </p>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-800 font-bold flex items-center gap-2">
+                        <Home size={14} className="text-indigo-400" />
+                        {user.hostelName || "Unassigned"}
+                      </span>
+                      {user.hostelType && (
+                        <span className="text-[9px] font-black uppercase tracking-widest bg-indigo-100 text-indigo-600 px-2 py-1 rounded-md">
+                          {user.hostelType} Hostel
+                        </span>
                       )}
                     </div>
-                 </div>
-               )}
-
-               {(user.role === 'student' || user.role === 'caretaker') && (
-                 <div>
-                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">
-                      {user.role === 'student' ? 'Academic Profile' : 'Personal Profile'}
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {user.entryNumber && (
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 col-span-2">
-                          <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Entry Number</p>
-                          <p className="text-sm font-bold text-slate-800 tracking-wide">{user.entryNumber}</p>
-                        </div>
-                      )}
-                      {user.role === 'student' && (
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                          <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Year</p>
-                          <p className="text-sm font-bold text-slate-800">{user.year || 'N/A'}</p>
-                        </div>
-                      )}
-                      <div className={`bg-slate-50 p-3 rounded-xl border border-slate-100 ${user.role === 'caretaker' && !user.entryNumber ? 'col-span-2' : ''}`}>
-                         <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Gender</p>
-                         <p className="text-sm font-bold text-slate-800 capitalize">{user.gender || 'N/A'}</p>
+                    {user.role === "student" && user.roomNumber && (
+                      <div className="pt-2 border-t border-slate-200/60 mt-1">
+                        <span className="text-slate-700 font-bold text-sm flex items-center gap-2">
+                          <DoorOpen size={13} className="text-slate-400" />
+                          Room {user.roomNumber}
+                        </span>
+                        {user.floorNumber && (
+                          <span className="text-slate-500 font-medium text-xs ml-5">(Floor {user.floorNumber})</span>
+                        )}
                       </div>
-                      {user.role === 'student' && (
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 col-span-2">
-                           <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Degree Type</p>
-                           <p className="text-sm font-bold text-slate-800">{user.degreeType || 'N/A'}</p>
-                        </div>
-                      )}
-                    </div>
-                 </div>
-               )}
-
-               <div>
-                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Contact Details</p>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-3">
-                    <p className="text-slate-800 font-bold flex items-center gap-3">
-                      <span className="text-lg">✉️</span> 
-                      <span className="text-sm truncate">{user.email}</span>
-                    </p>
-                    {user.phone && (
-                      <p className="text-slate-800 font-bold flex items-center gap-3 pt-3 border-t border-slate-200/60">
-                        <span className="text-lg">📞</span> 
-                        <span className="text-sm">{user.phone}</span>
-                      </p>
                     )}
                   </div>
-               </div>
+                </div>
+              )}
 
-               <button 
-                 onClick={() => setIsProfileModalOpen(false)}
-                 className="w-full mt-4 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition shadow-sm"
-               >
-                 Close Profile
-               </button>
+              {(user.role === "student" || user.role === "caretaker") && (
+                <div>
+                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">
+                    {user.role === "student" ? "Academic Profile" : "Personal Profile"}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {user.entryNumber && (
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 col-span-2">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Entry Number</p>
+                        <p className="text-sm font-bold text-slate-800 tracking-wide">{user.entryNumber}</p>
+                      </div>
+                    )}
+                    {user.role === "student" && (
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Year</p>
+                        <p className="text-sm font-bold text-slate-800">{user.year || "N/A"}</p>
+                      </div>
+                    )}
+                    <div className={`bg-slate-50 p-3 rounded-xl border border-slate-100 ${user.role === "caretaker" && !user.entryNumber ? "col-span-2" : ""}`}>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Gender</p>
+                      <p className="text-sm font-bold text-slate-800 capitalize">{user.gender || "N/A"}</p>
+                    </div>
+                    {user.role === "student" && (
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 col-span-2">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Degree Type</p>
+                        <p className="text-sm font-bold text-slate-800">{user.degreeType || "N/A"}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Contact Details</p>
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-3">
+                  <p className="text-slate-800 font-bold flex items-center gap-3">
+                    <Mail size={15} className="text-slate-400 shrink-0" />
+                    <span className="text-sm truncate">{user.email}</span>
+                  </p>
+                  {user.phone && (
+                    <p className="text-slate-800 font-bold flex items-center gap-3 pt-3 border-t border-slate-200/60">
+                      <Phone size={15} className="text-slate-400 shrink-0" />
+                      <span className="text-sm">{user.phone}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsProfileModalOpen(false)}
+                className="w-full mt-2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition shadow-sm"
+              >
+                Close Profile
+              </button>
             </div>
           </div>
         </div>
