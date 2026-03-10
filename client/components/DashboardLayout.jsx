@@ -24,9 +24,10 @@ export default function DashboardLayout({ children, role }) {
     ],
     warden: [
       { label: "Overview", icon: "🏠", path: "/dashboard/warden" },
-      { label: "Students Lists", icon: "📊", path: "/dashboard/caretaker/students" },
-      { label: "Complaints", icon: "🛠️", path: "/dashboard/caretaker/complaints" },
-      { label: "Notices", icon: "📝", path: "/dashboard/caretaker/notices" },
+      { label: "Students Lists", icon: "📊", path: "/dashboard/warden/students" },
+      { label: "Complaints", icon: "🛠️", path: "/dashboard/warden/complaints" },
+      { label: "Notices", icon: "📝", path: "/dashboard/warden/notices" },
+      { label: "Forms", icon: "📄", path: "/dashboard/warden/forms" },
     ]
   };
 
