@@ -26,6 +26,7 @@ export default function ComplaintDashboard() {
   const [complaints, setComplaints] = useState([]);
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState(null);
 const [floorFilter, setFloorFilter] = useState("All");
 const [categoryFilter, setCategoryFilter] = useState("All");
 const [statusFilter, setStatusFilter] = useState("All"); 
@@ -85,7 +86,8 @@ useEffect(() => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {["Electrical", "Plumbing", "Furniture", "Internet"].map((cat) => {
-            const pendingInCat = complaints.filter(c => c.category === cat && c.status === "Pending");
+            const activeStatuses = ["Pending", "Accepted", "Scheduled", "In Progress"];
+            const pendingInCat = complaints.filter(c => c.category === cat && activeStatuses.includes(c.status));
             const affectedFloors = [...new Set(pendingInCat.map(c => c.floor))].filter(f => f != null).sort();
 
             return (
@@ -95,7 +97,7 @@ useEffect(() => {
                     {cat === "Electrical" ? "⚡" : cat === "Plumbing" ? "🚰" : cat === "Furniture" ? "🪑" : "🌐"}
                   </span>
                   <span className="bg-indigo-600 text-white text-[10px] font-black px-2 py-1 rounded-lg">
-                    {pendingInCat.length} PENDING
+                    {pendingInCat.length} ACTIVE
                   </span>
                 </div>
                 <h3 className="font-bold text-slate-800 text-lg">{cat}</h3>
@@ -188,21 +190,26 @@ useEffect(() => {
           {/* Minimalist Status Indicator */}
           <div className={`absolute left-0 top-0 h-full w-2 ${getStatusColor(item.status)}`} />
 
-          {/* Student Info & Slot */}
-          <div className="w-full md:w-56 flex-shrink-0 text-center md:text-left border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0 md:pr-8">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Reported By</p>
+          {/* Student Info Clickable Area */}
+          <div 
+            onClick={() => setSelectedStudent(item.student)}
+            className="w-full md:w-64 flex-shrink-0 text-center md:text-left border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0 md:pr-6 cursor-pointer group/student hover:bg-slate-50 p-3 rounded-2xl transition"
+          >
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 group-hover/student:text-indigo-600 transition">View Student Profile</p>
+            
             <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
-               <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-lg font-black text-slate-600 border border-slate-200 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
+               <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-lg font-black text-slate-600 border border-slate-200 shadow-sm group-hover/student:bg-indigo-600 group-hover/student:text-white transition-all">
                   {item.student?.name?.charAt(0) || '?'}
                </div>
-               <div className="text-left">
-                  <p className="text-sm font-black text-slate-800 truncate w-32">{item.student?.name || 'Unknown'}</p>
-                  <p className="text-[10px] font-bold text-slate-400">Room {item.student?.roomNumber || 'N/A'}</p>
+               <div className="text-left w-full overflow-hidden">
+                  <p className="text-sm font-black text-slate-800 truncate">{item.student?.name || 'Unknown'}</p>
+                  <p className="text-[10px] font-bold text-slate-500 truncate">{item.student?.email || 'No email provided'}</p>
                </div>
             </div>
-            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-              <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Preferred Time</p>
-              <p className="text-xs font-bold text-indigo-600 truncate">{item.preferredSlot || "Anytime"}</p>
+
+            <div className="bg-slate-50 p-2 rounded-xl border border-slate-100 text-left">
+                <p className="text-[8px] font-black text-slate-400 uppercase">Room</p>
+                <p className="text-xs font-bold text-slate-700">{item.student?.roomNumber || 'N/A'}</p>
             </div>
           </div>
 
@@ -291,6 +298,69 @@ useEffect(() => {
   </div>
 </div>
     </div>
+
+      {/* Student Profile Modal */}
+      {selectedStudent && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white max-w-sm w-full rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100 scale-in-center">
+            <div className="bg-indigo-600 p-8 text-center relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-500 to-indigo-700"></div>
+               <div className="relative z-10">
+                 <div className="w-20 h-20 bg-white rounded-full mx-auto flex items-center justify-center text-3xl font-black text-indigo-600 shadow-xl border-4 border-indigo-100 mb-3">
+                   {selectedStudent.name?.charAt(0) || '?'}
+                 </div>
+                 <h2 className="text-2xl font-black text-white leading-tight">{selectedStudent.name}</h2>
+                 <p className="text-indigo-100 text-sm font-medium mt-1">Student Profile</p>
+               </div>
+            </div>
+            <div className="p-6 space-y-4">
+               <div>
+                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Room Assignment</p>
+                  <p className="text-slate-800 font-bold bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between gap-2">
+                    <span>🚪 Room {selectedStudent.roomNumber || 'N/A'}</span>
+                  </p>
+               </div>
+               <div>
+                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Contact Information</p>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2">
+                    <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                      ✉️ {selectedStudent.email || 'No email'}
+                    </p>
+                    {selectedStudent.phone && (
+                      <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                        📞 {selectedStudent.phone}
+                      </p>
+                    )}
+                  </div>
+               </div>
+               <div>
+                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Academic Details</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase">Year</p>
+                      <p className="text-sm font-bold text-slate-800">{selectedStudent.year || 'N/A'}</p>
+                    </div>
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase">Gender</p>
+                      <p className="text-sm font-bold text-slate-800 capitalize">{selectedStudent.gender || 'N/A'}</p>
+                    </div>
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 col-span-2">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase">Degree</p>
+                      <p className="text-sm font-bold text-slate-800">{selectedStudent.degreeType || 'N/A'}</p>
+                    </div>
+                  </div>
+               </div>
+               <button 
+                 onClick={() => setSelectedStudent(null)}
+                 className="w-full mt-4 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition"
+               >
+                 Close Profile
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
   </DashboardLayout>
   );
 }

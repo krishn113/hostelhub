@@ -104,7 +104,7 @@ export const getComplaints = async (req, res) => {
 
     // Hostel Isolation: Only fetch complaints for the caretaker's hostel
     const complaints = await Complaint.find({ hostelId: req.user.hostelId })
-      .populate("student", "name roomNumber")
+      .populate("student", "name roomNumber email phone year gender degreeType")
       .sort({ createdAt: -1 });
     res.json(complaints);
   } catch (err) {
