@@ -62,13 +62,13 @@ export default function StudentComplaints() {
 
   const getStatusStyles = (status) => {
     switch (status) {
-      case 'Pending': return 'bg-amber-400 text-white';
-      case 'Accepted': return 'bg-blue-400 text-white';
-      case 'Scheduled': return 'bg-indigo-500 text-white';
-      case 'In Progress': return 'bg-purple-500 text-white';
-      case 'Resolved': return 'bg-green-500 text-white';
-      case 'Rejected': return 'bg-red-500 text-white';
-      default: return 'bg-slate-400 text-white';
+      case 'Pending': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'Accepted': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'Scheduled': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+      case 'In Progress': return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'Resolved': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'Rejected': return 'bg-rose-50 text-rose-700 border-rose-200';
+      default: return 'bg-slate-50 text-slate-700 border-slate-200';
     }
   };
 
@@ -157,9 +157,8 @@ export default function StudentComplaints() {
           ) : (
             /* <--- UPDATED: mapping through displayedComplaints now */
             displayedComplaints.map((c) => (
-              <div key={c._id} className="bg-white p-8 md:p-12 rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
-                
-                <div className={`absolute top-8 right-8 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.15em] shadow-sm ${getStatusStyles(c.status)}`}>
+              <div key={c._id} className="bg-white p-8 md:p-12 rounded-[3.5rem] border border-blue-50 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
+                <div className={`absolute top-8 right-8 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.15em] border shadow-sm ${getStatusStyles(c.status)}`}>
                   {c.status}
                 </div>
 

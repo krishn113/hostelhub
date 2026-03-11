@@ -72,90 +72,90 @@ export default function AdminDashboard() {
   return (
 
     <DashboardLayout role="admin" activeTab={activeTab} setActiveTab={setActiveTab}>
-          <div className="w-full max-w-7xl mx-auto space-y-10">
-      {/* HEADER */}
-      <div>
-        <h1 className="text-4xl font-black text-slate-900">
-          Admin Overview
-        </h1>
-        <p className="text-slate-500 italic">
-          Hostel capacity insights
-        </p>
-      </div>
+      <div className="w-full max-w-7xl mx-auto space-y-10">
+        {/* HEADER */}
+        <div>
+          <h1 className="text-4xl font-black text-slate-900">
+            Admin Overview
+          </h1>
+          <p className="text-slate-500 italic">
+            Hostel capacity insights
+          </p>
+        </div>
 
-      {/* STATS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5">
+        {/* STATS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5">
 
-        {statCards.map((s, i) => {
-          const Icon = s.icon;
-
-          return (
-            <div
-              key={i}
-              className={`bg-white p-6 rounded-2xl border shadow-sm hover:shadow-md transition ${s.color}`}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <span className="text-xs font-bold uppercase tracking-wide opacity-70">
-                  {s.label}
-                </span>
-
-                <div className="p-2 bg-white rounded-lg shadow-sm">
-                  <Icon size={18} />
-                </div>
-              </div>
-
-              <p className="text-3xl font-extrabold tracking-tight">
-                {s.value}
-              </p>
-            </div>
-          );
-        })}
-
-      </div>
-
-
-      {/* HOSTEL OCCUPANCY */}
-      <div className="bg-white p-8 rounded-[2rem] border shadow-sm">
-
-        <h2 className="text-lg font-bold mb-6">
-          Hostel Occupancy
-        </h2>
-
-        <div className="space-y-6">
-
-          {hostelOccupancy.map((h, i) => {
-
-          const percent =
-            h.capacity === 0
-              ? 0
-              : Math.min(100, Math.round((h.occupied / h.capacity) * 100));
+          {statCards.map((s, i) => {
+            const Icon = s.icon;
 
             return (
-              <div key={i}>
+              <div
+                key={i}
+                className={`bg-white p-6 rounded-2xl border shadow-sm hover:shadow-md transition ${s.color}`}
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <span className="text-xs font-bold uppercase tracking-wide opacity-70">
+                    {s.label}
+                  </span>
 
-                <div className="flex justify-between text-sm mb-2 font-semibold">
-                  <span>{h.name} ({h.type})</span>
-                  <span>{percent}%</span>
+                  <div className="p-2 bg-white rounded-lg shadow-sm">
+                    <Icon size={18} />
+                  </div>
                 </div>
 
-                <div className="w-full bg-slate-100 h-3 rounded-full">
-
-                  <div
-                    className="h-3 rounded-full bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400"
-                    style={{ width: `${percent}%` }}
-                  />
-
-                </div>
-
+                <p className="text-3xl font-extrabold tracking-tight">
+                  {s.value}
+                </p>
               </div>
             );
           })}
 
         </div>
 
-      </div>
 
-    </div>
+        {/* HOSTEL OCCUPANCY */}
+        <div className="bg-white p-8 rounded-[2rem] border shadow-sm">
+
+          <h2 className="text-lg font-bold mb-6">
+            Hostel Occupancy
+          </h2>
+
+          <div className="space-y-6">
+
+            {hostelOccupancy.map((h, i) => {
+
+              const percent =
+                h.capacity === 0
+                  ? 0
+                  : Math.min(100, Math.round((h.occupied / h.capacity) * 100));
+
+              return (
+                <div key={i}>
+
+                  <div className="flex justify-between text-sm mb-2 font-semibold">
+                    <span>{h.name} ({h.type})</span>
+                    <span>{percent}%</span>
+                  </div>
+
+                  <div className="w-full bg-slate-100 h-3 rounded-full">
+
+                    <div
+                      className="h-3 rounded-full bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400"
+                      style={{ width: `${percent}%` }}
+                    />
+
+                  </div>
+
+                </div>
+              );
+            })}
+
+          </div>
+
+        </div>
+
+      </div>
     </DashboardLayout>
   );
 }

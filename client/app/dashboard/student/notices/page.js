@@ -107,39 +107,61 @@ const resolveHostelAndFetchNotices = async () => {
 
         {/* FEED */}
         <div className="space-y-6">
-          {filteredNotices.map((notice) => (
-            <div 
-              key={notice._id} 
-              className={`bg-white rounded-[2.5rem] p-8 border transition-all duration-300 ${
-                notice.isPinned ? 'border-amber-200 bg-amber-50/20 ring-2 ring-amber-500/5' : 'border-slate-100 hover:border-indigo-100'
-              }`}
-            >
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-lg ${
-                      notice.category === 'Urgent' ? 'bg-red-500 text-white shadow-lg shadow-red-100' : 
-                      notice.category === 'Academic' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-100' :
-                      notice.category === 'Maintenance' ? 'bg-amber-500 text-white shadow-lg shadow-amber-100' :
-                      'bg-slate-800 text-white shadow-lg shadow-slate-100'
-                    }`}>
-                      {notice.category}
-                    </span>
-                    <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
-                      <CalendarDays size={12} /> {new Date(notice.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                  {notice.isPinned && (
-                    <span className="bg-amber-100 text-amber-700 text-[9px] font-black px-3 py-1.5 rounded-full flex items-center gap-1">
-                      <Pin size={10} /> PINNED
-                    </span>
-                  )}
-                </div>
+          {filteredNotices.map((notice) => {
+            // Category styling logic same as caretaker
+            const getCategoryStyles = (cat) => {
+              switch(cat) {
+                case 'Urgent': return 'bg-rose-50 border-rose-200 text-rose-700 ring-rose-500/10';
+                case 'Academic': return 'bg-indigo-50 border-indigo-200 text-indigo-700 ring-indigo-500/10';
+                case 'Maintenance': return 'bg-amber-50 border-amber-200 text-amber-700 ring-amber-500/10';
+                case 'Events': return 'bg-emerald-50 border-emerald-200 text-emerald-700 ring-emerald-500/10';
+                default: return 'bg-slate-50 border-slate-200 text-slate-700 ring-slate-500/10';
+              }
+            };
+            const catStyles = getCategoryStyles(notice.category);
 
-                <div>
-                  <h2 className="text-2xl font-black text-slate-800 mb-2 leading-tight">{notice.title}</h2>
-                  <p className="text-slate-600 text-sm leading-relaxed font-medium opacity-90">{notice.content}</p>
-                </div>
+            return (
+              <div 
+                key={notice._id} 
+                className={`rounded-[3rem] p-8 border-2 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl relative overflow-hidden group ${
+                  notice.isPinned ? 'border-amber-300 bg-amber-50/50 shadow-amber-100/20' : `${catStyles} shadow-sm`
+                }`}
+              >
+                {/* Decorative blob */}
+                <div className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 group-hover:opacity-30 transition-opacity ${
+                  notice.category === 'Urgent' ? 'bg-rose-400' :
+                  notice.category === 'Academic' ? 'bg-indigo-400' :
+                  notice.category === 'Maintenance' ? 'bg-amber-400' :
+                  notice.category === 'Events' ? 'bg-emerald-400' : 'bg-slate-400'
+                }`} />
+
+                <div className="flex flex-col gap-6 relative z-10">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className={`text-[10px] font-black uppercase px-4 py-1.5 rounded-full border shadow-sm ${
+                        notice.category === 'Urgent' ? 'bg-white text-rose-600 border-rose-100' : 
+                        notice.category === 'Academic' ? 'bg-white text-indigo-600 border-indigo-100' :
+                        notice.category === 'Maintenance' ? 'bg-white text-amber-600 border-amber-100' :
+                        notice.category === 'Events' ? 'bg-white text-emerald-600 border-emerald-100' :
+                        'bg-white text-slate-600 border-slate-100'
+                      }`}>
+                        {notice.category}
+                      </span>
+                      <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <CalendarDays size={14} className="text-slate-300" /> {new Date(notice.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {notice.isPinned && (
+                      <span className="bg-amber-500 text-white text-[9px] font-black px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg shadow-amber-200 animate-pulse">
+                        <Pin size={10} /> PINNED
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <h2 className="text-2xl font-black text-slate-900 mb-3 leading-tight group-hover:text-indigo-600 transition-colors">{notice.title}</h2>
+                    <p className="text-slate-600 text-sm leading-relaxed font-bold opacity-80">{notice.content}</p>
+                  </div>
 
                 <div className="pt-6 mt-2 border-t border-slate-100 flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -199,7 +221,8 @@ const resolveHostelAndFetchNotices = async () => {
                 )}
               </div>
             </div>
-          ))}
+          );
+        })}
 
           {filteredNotices.length === 0 && (
             <div className="text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-100">

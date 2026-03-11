@@ -90,13 +90,20 @@ useEffect(() => {
             const pendingInCat = complaints.filter(c => c.category === cat && activeStatuses.includes(c.status));
             const affectedFloors = [...new Set(pendingInCat.map(c => c.floor))].filter(f => f != null).sort();
 
+            const colors = {
+              Electrical: { card: "bg-amber-50/50 border-amber-100", icon: "bg-amber-100 text-amber-600", badge: "bg-amber-600" },
+              Plumbing: { card: "bg-blue-50/50 border-blue-100", icon: "bg-blue-100 text-blue-600", badge: "bg-blue-600" },
+              Furniture: { card: "bg-rose-50/50 border-rose-100", icon: "bg-rose-100 text-rose-600", badge: "bg-rose-600" },
+              Internet: { card: "bg-indigo-50/50 border-indigo-100", icon: "bg-indigo-100 text-indigo-600", badge: "bg-indigo-600" }
+            }[cat] || { card: "bg-white border-slate-200", icon: "bg-slate-100 text-slate-600", badge: "bg-indigo-600" };
+
             return (
-              <div key={cat} className="bg-white p-5 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-md transition-all">
+              <div key={cat} className={`${colors.card} p-5 rounded-[2rem] border shadow-sm hover:shadow-md transition-all duration-300`}>
                 <div className="flex justify-between items-start mb-4">
-                  <span className="p-2 bg-slate-100 rounded-xl text-xl">
+                  <span className={`p-2 ${colors.icon} rounded-xl text-xl shadow-sm`}>
                     {cat === "Electrical" ? "⚡" : cat === "Plumbing" ? "🚰" : cat === "Furniture" ? "🪑" : "🌐"}
                   </span>
-                  <span className="bg-indigo-600 text-white text-[10px] font-black px-2 py-1 rounded-lg">
+                  <span className={`${colors.badge} text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-sm`}>
                     {pendingInCat.length} ACTIVE
                   </span>
                 </div>
@@ -105,12 +112,12 @@ useEffect(() => {
                 <div className="mt-3 flex flex-wrap gap-1">
                   {affectedFloors.length > 0 ? (
                     affectedFloors.map(f => (
-                      <span key={f} className="text-[9px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md">
+                      <span key={f} className={`text-[9px] font-bold ${colors.icon} px-2 py-0.5 rounded-md`}>
                         FLOOR {f}
                       </span>
                     ))
                   ) : (
-                    <span className="text-[9px] font-bold text-slate-400 italic">No active issues</span>
+                    <span className="text-[9px] font-bold text-slate-400 italic opacity-70">No active issues</span>
                   )}
                 </div>
               </div>

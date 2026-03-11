@@ -62,7 +62,7 @@ export const getAllStudents = async (req, res) => {
     students.forEach(s => log(`  -> ${s.name} (${s.email}) room: ${s.roomNumber}`));
 
     log(`[getAllStudents] Fetched ${students.length} students for hostel ${req.user.hostelId}`);
-    
+
     // Clear logs periodically so we only see the latest
     if (runtimeLogs.length > 50) runtimeLogs = runtimeLogs.slice(-20);
 
@@ -85,7 +85,7 @@ export const uploadRooms = async (req, res) => {
     await Promise.all(rows.map(async (r) => {
       const email = (r.Email || r.email || "").toString().trim().toLowerCase();
       const roomVal = (r.RoomNumber || r.roomNumber);
-      
+
       log(`[uploadRooms] Row: email=${email}, room=${roomVal}`);
 
       // 1. Find the user by email (direct match since email is lowercase in DB)
@@ -95,7 +95,7 @@ export const uploadRooms = async (req, res) => {
         const roomNum = roomVal.toString();
         const floorNum = (r.FloorNumber || r.floorNumber || "").toString();
         log(`[uploadRooms] Matched user ${user.name} (${user._id}), assigning room ${roomNum}, floor ${floorNum}`);
-        
+
         // 2. Update the Room model (Mapping student to a room in this hostel)
         await Room.findOneAndUpdate(
           { hostelId: req.user.hostelId, roomNumber: roomNum },
@@ -104,10 +104,10 @@ export const uploadRooms = async (req, res) => {
         );
 
         // 3. Update the User model
-        await User.findByIdAndUpdate(user._id, { 
+        await User.findByIdAndUpdate(user._id, {
           roomNumber: roomNum,
           floorNumber: floorNum,
-          hostelId: req.user.hostelId 
+          hostelId: req.user.hostelId
         });
         log(`[uploadRooms] Success for ${user.email} (Room: ${roomNum}, Floor: ${floorNum})`);
       } else {
@@ -115,9 +115,9 @@ export const uploadRooms = async (req, res) => {
       }
     }));
 
-    res.json({ 
-      msg: `Rooms updated for ${rows.length} records processed`, 
-      debugLog: runtimeLogs 
+    res.json({
+      msg: `Rooms updated for ${rows.length} records processed`,
+      debugLog: runtimeLogs
     });
   } catch (error) {
     console.error("Upload Error:", error);
@@ -157,7 +157,7 @@ export const downloadStudents = async (req, res) => {
     const users = await User.find(query).select("name email entryNumber roomNumber floorNumber");
 
     log(`[downloadStudents] EXPORT_V3_START | Found ${users.length} students.`);
-    
+
     // Use AOA (Array of Arrays) for absolute control over the header row
     const header = ["Name", "Email", "EntryNumber", "RoomNumber", "FloorNumber"];
     const rows = users.map(u => [
@@ -226,6 +226,7 @@ export const getRoomStats = async (req, res) => {
     res.json({
       totalStudents,
       occupiedRooms,
+      totalRooms,
       emptyRooms: totalRooms - occupiedRooms,
       occupancyRate: totalRooms > 0 ? ((occupiedRooms / totalRooms) * 100).toFixed(1) : 0
     });

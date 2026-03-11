@@ -57,46 +57,55 @@ useEffect(() => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Pending': return 'bg-amber-400';
-      case 'Accepted': return 'bg-blue-400';
-      case 'Scheduled': return 'bg-indigo-500';
-      case 'In Progress': return 'bg-purple-500';
-      case 'Resolved': return 'bg-green-500';
-      case 'Rejected': return 'bg-red-500';
-      default: return 'bg-slate-300';
+      case 'Pending': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'Accepted': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'Scheduled': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+      case 'In Progress': return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'Resolved': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'Rejected': return 'bg-rose-50 text-rose-700 border-rose-200';
+      default: return 'bg-slate-50 text-slate-700 border-slate-200';
     }
   };
 
   return (
   <DashboardLayout role="warden">
-    <div className="p-4 md:p-8 bg-slate-50 min-h-screen font-sans">
+    <div className="max-w-7xl mx-auto space-y-8 pb-20 animate-in fade-in duration-700">
       
       {/* 1. TOP ANALYSIS REPORT SECTION */}
-      <header className="mb-8">
-        <h1 className="text-3xl font-black text-slate-800 tracking-tight mb-2 uppercase italic">Maintenance Control</h1>
-        <p className="text-slate-500 font-medium mb-6">Status tracking and status management for all hostel residents.</p>
+      <header className="space-y-6">
+        <div>
+          <h1 className="text-5xl font-black text-slate-900 tracking-tight">Maintenance Control</h1>
+          <p className="text-slate-500 font-medium mt-2">Status tracking and status management for all hostel residents.</p>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {["Electrical", "Plumbing", "Furniture", "Internet"].map((cat) => {
             const pendingInCat = complaints.filter(c => c.category === cat && c.status === "Pending");
             const affectedFloors = [...new Set(pendingInCat.map(c => c.floor))].filter(f => f != null).sort();
+            
+            const catStyles = {
+              Electrical: "bg-amber-50/50 text-amber-600 border-amber-200",
+              Plumbing: "bg-blue-50/50 text-blue-600 border-blue-200",
+              Furniture: "bg-orange-50/50 text-orange-600 border-orange-200",
+              Internet: "bg-indigo-50/50 text-indigo-600 border-indigo-200"
+            };
 
             return (
-              <div key={cat} className="bg-white p-5 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                <div className="flex justify-between items-start mb-4">
-                  <span className="p-2 bg-slate-100 rounded-xl text-xl">
+              <div key={cat} className={`${catStyles[cat]} p-6 rounded-[2.5rem] border shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1 group relative overflow-hidden`}>
+                <div className="flex justify-between items-start mb-6">
+                  <span className="p-3 bg-white rounded-2xl text-2xl shadow-sm group-hover:scale-110 transition">
                     {cat === "Electrical" ? "⚡" : cat === "Plumbing" ? "🚰" : cat === "Furniture" ? "🪑" : "🌐"}
                   </span>
-                  <span className="bg-indigo-600 text-white text-[10px] font-black px-2 py-1 rounded-lg">
+                  <span className="bg-white/80 backdrop-blur-sm text-[10px] font-black px-4 py-1.5 rounded-full shadow-sm border border-slate-100 italic">
                     {pendingInCat.length} PENDING
                   </span>
                 </div>
-                <h3 className="font-bold text-slate-800 text-lg">{cat}</h3>
+                <h3 className="font-black text-slate-900 text-xl tracking-tight">{cat}</h3>
                 
-                <div className="mt-3 flex flex-wrap gap-1">
+                <div className="mt-4 flex flex-wrap gap-2">
                   {affectedFloors.length > 0 ? (
                     affectedFloors.map(f => (
-                      <span key={f} className="text-[9px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md">
+                      <span key={f} className="text-[9px] font-black bg-white/60 text-slate-800 px-3 py-1 rounded-full shadow-sm uppercase tracking-widest border border-white/40">
                         FLOOR {f}
                       </span>
                     ))
@@ -172,14 +181,14 @@ useEffect(() => {
       </button>
   </div>
 
-  {/* RENDER FILTERED COMPLAINTS */}
+   {/* RENDER FILTERED COMPLAINTS */}
   <div className="space-y-6">
     {filteredComplaints.length > 0 ? (
       filteredComplaints.map((item) => (
-        <div key={item._id} className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm flex flex-col md:flex-row gap-8 items-center relative overflow-hidden group hover:shadow-xl hover:border-indigo-100 transition-all duration-300">
+        <div key={item._id} className="bg-white rounded-[3.5rem] p-8 md:p-12 border-2 border-slate-100 shadow-sm flex flex-col md:flex-row gap-12 items-center relative overflow-hidden group hover:shadow-2xl hover:border-indigo-100 transition-all duration-500 hover:-translate-y-1">
           
-          {/* Minimalist Status Indicator */}
-          <div className={`absolute left-0 top-0 h-full w-2 ${getStatusColor(item.status)}`} />
+          {/* Minimalist Status Indicator Accent */}
+          <div className={`absolute left-0 top-0 bottom-0 w-2.5 ${getStatusColor(item.status).split(' ')[0]}`} />
 
           {/* Student Info & Slot */}
           <div className="w-full md:w-56 flex-shrink-0 text-center md:text-left border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0 md:pr-8">
@@ -202,13 +211,13 @@ useEffect(() => {
           {/* Problem Description */}
           <div className="flex-1 w-full">
              <div className="flex items-center gap-2 mb-3">
-                <span className="text-[10px] font-black text-indigo-600 uppercase px-3 py-1 bg-indigo-50 rounded-full border border-indigo-100">
+                <span className="text-[10px] font-black text-indigo-600 uppercase px-4 py-1.5 bg-indigo-50 rounded-full border border-indigo-100">
                   Floor {item.floor || 'Unknown'}
                 </span>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-2">
                   {item.category}
                 </span>
-                <span className={`ml-auto text-xs font-black uppercase px-3 py-1 rounded-xl text-white shadow-md ${getStatusColor(item.status)}`}>
+                <span className={`ml-auto text-[10px] font-black uppercase px-6 py-2 rounded-full border shadow-sm ${getStatusColor(item.status)}`}>
                   {item.status}
                 </span>
              </div>

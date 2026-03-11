@@ -95,27 +95,27 @@ export default function NoticeDashboard() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-[2rem] border border-slate-200 shadow-sm transition hover:shadow-md">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Live Notices</p>
-              <h3 className="text-2xl font-black text-slate-800">{stats.total}</h3>
-              <div className="h-1 w-12 bg-indigo-500 rounded-full mt-2" />
+            <div className="bg-indigo-50/50 p-5 rounded-[2rem] border border-indigo-100 shadow-sm transition hover:shadow-md">
+              <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Live Notices</p>
+              <h3 className="text-2xl font-black text-indigo-800">{stats.total}</h3>
+              <div className="h-1 w-12 bg-indigo-400 rounded-full mt-2" />
             </div>
-            <div className="bg-white p-5 rounded-[2rem] border border-slate-200 shadow-sm transition hover:shadow-md">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Urgent Alerts</p>
-              <h3 className="text-2xl font-black text-red-500">{stats.urgent}</h3>
-              <div className="h-1 w-12 bg-red-500 rounded-full mt-2" />
+            <div className="bg-rose-50/50 p-5 rounded-[2rem] border border-rose-100 shadow-sm transition hover:shadow-md">
+              <p className="text-[9px] font-black text-rose-400 uppercase tracking-widest mb-1">Urgent Alerts</p>
+              <h3 className="text-2xl font-black text-rose-600">{stats.urgent}</h3>
+              <div className="h-1 w-12 bg-rose-500 rounded-full mt-2" />
             </div>
-            <div className="bg-white p-5 rounded-[2rem] border border-slate-200 shadow-sm transition hover:shadow-md">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Pinned Items</p>
-              <h3 className="text-2xl font-black text-amber-500">{stats.pinned}</h3>
+            <div className="bg-amber-50/50 p-5 rounded-[2rem] border border-amber-100 shadow-sm transition hover:shadow-md">
+              <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest mb-1">Pinned Items</p>
+              <h3 className="text-2xl font-black text-amber-600">{stats.pinned}</h3>
               <div className="h-1 w-12 bg-amber-500 rounded-full mt-2" />
             </div>
-            <div className="bg-indigo-900 p-5 rounded-[2rem] shadow-xl relative overflow-hidden group">
+            <div className="bg-emerald-50/50 p-5 rounded-[2rem] border border-emerald-100 shadow-sm relative overflow-hidden group">
               <div className="relative z-10">
-                <p className="text-[9px] font-black text-indigo-200 uppercase tracking-widest mb-1">Last 24 Hours</p>
-                <h3 className="text-2xl font-black text-white">{stats.recent} New</h3>
+                <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-1">Last 24 Hours</p>
+                <h3 className="text-2xl font-black text-emerald-700">{stats.recent} New</h3>
               </div>
-              <div className="absolute -right-2 -bottom-2 text-white opacity-5 text-6xl group-hover:scale-125 transition duration-500">📢</div>
+              <div className="absolute -right-2 -bottom-2 text-emerald-600 opacity-5 text-6xl group-hover:scale-125 transition duration-500">📢</div>
             </div>
           </div>
         </header>
@@ -153,62 +153,83 @@ export default function NoticeDashboard() {
           {notices
             .sort((a, b) => (b.isPinned - a.isPinned) || new Date(b.createdAt) - new Date(a.createdAt))
             .filter(n => (activeCategory === "All" || n.category === activeCategory) && n.title.toLowerCase().includes(noticeSearch.toLowerCase()))
-            .map((notice) => (
-              <div key={notice._id} className={`group bg-white rounded-3xl overflow-hidden border transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${notice.isPinned ? 'border-amber-200 ring-2 ring-amber-500/10' : 'border-slate-200'}`}>
-                
-                {/* CARD HEADER (Title, Badges, Date) */}
-                <div className={`p-6 md:p-8 border-b ${
-                  notice.category === 'Urgent' ? 'bg-red-50/50 border-red-100' : 
-                  notice.category === 'Academic' ? 'bg-blue-50/50 border-blue-100' :
-                  notice.category === 'Maintenance' ? 'bg-amber-50/50 border-amber-100' :
-                  'bg-slate-50 border-slate-100'
-                }`}>
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex-1">
-                      <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-md ${
-                          notice.category === 'Urgent' ? 'bg-red-500 text-white shadow-md shadow-red-200' : 
-                          notice.category === 'Academic' ? 'bg-blue-500 text-white shadow-md shadow-blue-200' :
-                          notice.category === 'Maintenance' ? 'bg-amber-500 text-white shadow-md shadow-amber-200' :
-                          'bg-slate-800 text-white shadow-md shadow-slate-200'
-                        }`}>
-                          {notice.category}
-                        </span>
-                        {notice.isPinned && (
-                          <span className="flex items-center gap-1 bg-amber-200 text-amber-800 text-[10px] font-black px-3 py-1 rounded-md shadow-sm">
-                            PINNED 📍
-                          </span>
-                        )}
-                        <span className="text-[10px] font-bold text-slate-500 bg-white/60 px-2 py-1 rounded-md border border-slate-200/50 ml-auto md:ml-0">
-                          {new Date(notice.createdAt).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
-                        </span>
-                      </div>
-                      <h2 className={`text-2xl font-black leading-tight group-hover:text-indigo-600 transition-colors ${
-                        notice.category === 'Urgent' ? 'text-red-900' : 'text-slate-800'
-                      }`}>
-                        {notice.title}
-                      </h2>
-                    </div>
+            .map((notice) => {
+              const colors = {
+                Urgent: { 
+                  card: "bg-rose-50/30 border-rose-100 ring-rose-500/5", 
+                  header: "bg-rose-50/80 border-rose-100",
+                  badge: "bg-rose-500 text-white shadow-rose-200",
+                  title: "text-rose-900"
+                },
+                Academic: { 
+                  card: "bg-blue-50/30 border-blue-100 ring-blue-500/5", 
+                  header: "bg-blue-50/80 border-blue-100",
+                  badge: "bg-blue-500 text-white shadow-blue-200",
+                  title: "text-blue-900"
+                },
+                Maintenance: { 
+                  card: "bg-amber-50/30 border-amber-100 ring-amber-500/5", 
+                  header: "bg-amber-50/80 border-amber-100",
+                  badge: "bg-amber-500 text-white shadow-amber-200",
+                  title: "text-amber-900"
+                },
+                Events: { 
+                  card: "bg-purple-50/30 border-purple-100 ring-purple-500/5", 
+                  header: "bg-purple-50/80 border-purple-100",
+                  badge: "bg-purple-500 text-white shadow-purple-200",
+                  title: "text-purple-900"
+                }
+              }[notice.category] || { 
+                card: "bg-white border-slate-200 ring-slate-500/5", 
+                header: "bg-slate-50/80 border-slate-100",
+                badge: "bg-slate-800 text-white shadow-slate-200",
+                title: "text-slate-800"
+              };
 
-                    {/* TOOLBOX: PIN & DELETE */}
-                    <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                      <button 
-                        onClick={() => handlePinNotice(notice._id, notice.isPinned)}
-                        className={`p-2.5 rounded-xl border transition shadow-sm ${notice.isPinned ? 'bg-amber-500 border-amber-500 text-white hover:bg-amber-600' : 'bg-white border-slate-200 text-slate-400 hover:text-amber-500 hover:border-amber-200'}`}
-                        title={notice.isPinned ? "Unpin Notice" : "Pin Notice"}
-                      >
-                        📌
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteNotice(notice._id)}
-                        className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-red-500 hover:border-red-100 hover:bg-red-50 transition shadow-sm"
-                        title="Delete Notice"
-                      >
-                        🗑️
-                      </button>
+              return (
+                <div key={notice._id} className={`group ${colors.card} rounded-3xl overflow-hidden border transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${notice.isPinned ? 'ring-2 ring-amber-500/10' : ''}`}>
+                  
+                  {/* CARD HEADER (Title, Badges, Date) */}
+                  <div className={`p-6 md:p-8 border-b ${colors.header}`}>
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                          <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-md shadow-md ${colors.badge}`}>
+                            {notice.category}
+                          </span>
+                          {notice.isPinned && (
+                            <span className="flex items-center gap-1 bg-amber-200 text-amber-800 text-[10px] font-black px-3 py-1 rounded-md shadow-sm">
+                              PINNED 📍
+                            </span>
+                          )}
+                          <span className="text-[10px] font-bold text-slate-500 bg-white/60 px-2 py-1 rounded-md border border-slate-200/50 ml-auto md:ml-0">
+                            {new Date(notice.createdAt).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+                          </span>
+                        </div>
+                        <h2 className={`text-2xl font-black leading-tight group-hover:text-indigo-600 transition-colors ${colors.title}`}>
+                          {notice.title}
+                        </h2>
+                      </div>
+
+                      {/* TOOLBOX: PIN & DELETE */}
+                      <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                        <button 
+                          onClick={() => handlePinNotice(notice._id, notice.isPinned)}
+                          className={`p-2.5 rounded-xl border transition shadow-sm ${notice.isPinned ? 'bg-amber-500 border-amber-500 text-white hover:bg-amber-600' : 'bg-white border-slate-200 text-slate-400 hover:text-amber-500 hover:border-amber-200'}`}
+                          title={notice.isPinned ? "Unpin Notice" : "Pin Notice"}
+                        >
+                          📌
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteNotice(notice._id)}
+                          className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-red-500 hover:border-red-100 hover:bg-red-50 transition shadow-sm"
+                          title="Delete Notice"
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
 
                 {/* CARD BODY (Content & Actions) */}
                 <div className="p-6 md:p-8">
@@ -268,9 +289,10 @@ export default function NoticeDashboard() {
                     )}
                   </div>
                 )}
-                </div> {/* End CARD BODY */}
-              </div>
-            ))}
+                </div>
+                </div>
+                );
+              })}
 
           {notices.length === 0 && (
             <div className="text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-200">

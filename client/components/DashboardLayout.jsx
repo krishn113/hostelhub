@@ -31,31 +31,31 @@ export default function DashboardLayout({ children, role }) {
 
   const menus = {
     student: [
-      { label: "Overview",    iconKey: "home",       path: "/dashboard/student" },
-      { label: "Notices",     iconKey: "notices",    path: "/dashboard/student/notices" },
-      { label: "Complaints",  iconKey: "complaints", path: "/dashboard/student/complaints" },
-      { label: "Forms",       iconKey: "forms",      path: "/dashboard/student/forms" },
-      { label: "Lost & Found",iconKey: "lostfound",  path: "/dashboard/student/lost-found" },
+      { label: "Overview", iconKey: "home", path: "/dashboard/student" },
+      { label: "Notices", iconKey: "notices", path: "/dashboard/student/notices" },
+      { label: "Complaints", iconKey: "complaints", path: "/dashboard/student/complaints" },
+      { label: "Forms", iconKey: "forms", path: "/dashboard/student/forms" },
+      { label: "Lost & Found", iconKey: "lostfound", path: "/dashboard/student/lost-found" },
     ],
     caretaker: [
-      { label: "Overview",       iconKey: "home",       path: "/dashboard/caretaker" },
-      { label: "Students Lists", iconKey: "students",   path: "/dashboard/caretaker/students" },
-      { label: "Complaints",     iconKey: "complaints", path: "/dashboard/caretaker/complaints" },
-      { label: "Notices",        iconKey: "notices",    path: "/dashboard/caretaker/notices" },
-      { label: "Forms",          iconKey: "forms",      path: "/dashboard/caretaker/forms" },
+      { label: "Overview", iconKey: "home", path: "/dashboard/caretaker" },
+      { label: "Students Lists", iconKey: "students", path: "/dashboard/caretaker/students" },
+      { label: "Complaints", iconKey: "complaints", path: "/dashboard/caretaker/complaints" },
+      { label: "Notices", iconKey: "notices", path: "/dashboard/caretaker/notices" },
+      { label: "Forms", iconKey: "forms", path: "/dashboard/caretaker/forms" },
     ],
     warden: [
-      { label: "Overview",       iconKey: "home",       path: "/dashboard/warden" },
-      { label: "Students Lists", iconKey: "students",   path: "/dashboard/warden/students" },
-      { label: "Complaints",     iconKey: "complaints", path: "/dashboard/warden/complaints" },
-      { label: "Notices",        iconKey: "notices",    path: "/dashboard/warden/notices" },
-      { label: "Forms",          iconKey: "forms",      path: "/dashboard/warden/forms" },
+      { label: "Overview", iconKey: "home", path: "/dashboard/warden" },
+      { label: "Students Lists", iconKey: "students", path: "/dashboard/warden/students" },
+      { label: "Complaints", iconKey: "complaints", path: "/dashboard/warden/complaints" },
+      { label: "Notices", iconKey: "notices", path: "/dashboard/warden/notices" },
+      { label: "Forms", iconKey: "forms", path: "/dashboard/warden/forms" },
     ],
     admin: [
-      { label: "Overview",    iconKey: "home",        path: "/dashboard/admin" },
+      { label: "Overview", iconKey: "home", path: "/dashboard/admin" },
       { label: "Allocations", iconKey: "allocations", path: "/dashboard/admin/allocations" },
-      { label: "Hostels",     iconKey: "hostel",      path: "/dashboard/admin/hostels" },
-      { label: "Staff",       iconKey: "staff",       path: "/dashboard/admin/staff" },
+      { label: "Hostels", iconKey: "hostel", path: "/dashboard/admin/hostels" },
+      { label: "Staff", iconKey: "staff", path: "/dashboard/admin/staff" },
     ],
   };
 
@@ -66,17 +66,30 @@ export default function DashboardLayout({ children, role }) {
     setSidebarOpen(false);
   };
 
+  const isCaretaker = role === "caretaker" || user?.role === "caretaker";
+  const isStudent = role === "student" || user?.role === "student";
+  const isWarden = role === "warden" || user?.role === "warden";
+  const isPastelRole = isCaretaker || isStudent || isWarden;
+
+  const bgStyles = isPastelRole ? "bg-[#F0F7FF]" : "bg-slate-50";
+  const sidebarStyles = isPastelRole ? "bg-[#B6D8F2] border-blue-200" : "bg-white border-slate-200";
+  const headerStyles = isPastelRole ? "bg-[#D1E9FF]/90 border-blue-200" : "bg-white/80 border-slate-200";
+  const sideTextStyles = isPastelRole ? "text-slate-700 hover:bg-white/40 hover:text-slate-900" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700";
+  const sideActiveStyles = isPastelRole ? "bg-white/60 text-blue-800 border-none" : "bg-indigo-50 text-indigo-600";
+  const logoStyles = isPastelRole ? "text-blue-700" : "text-indigo-600";
+  const headerTextStyles = isPastelRole ? "text-slate-800" : "text-slate-800";
+
   const SidebarContent = () => (
     <>
       {/* Logo */}
       <div className="p-6 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-black text-indigo-600">HostelHub</h2>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Management System</p>
+          <h2 className={`text-xl font-black ${logoStyles}`}>HostelHub</h2>
+          <p className={`text-[10px] ${isCaretaker ? "text-slate-400" : "text-slate-400"} font-bold uppercase tracking-widest`}>Management System</p>
         </div>
         {/* Close button — mobile only */}
         <button
-          className="md:hidden p-2 rounded-xl hover:bg-slate-100 text-slate-500"
+          className={`md:hidden p-2 rounded-xl ${isCaretaker ? "hover:bg-slate-800 text-slate-400" : "hover:bg-slate-100 text-slate-500"}`}
           onClick={() => setSidebarOpen(false)}
         >
           <X size={20} />
@@ -92,13 +105,10 @@ export default function DashboardLayout({ children, role }) {
             <button
               key={item.label}
               onClick={() => handleNav(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all text-sm ${
-                active
-                  ? "bg-indigo-50 text-indigo-600"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-              }`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all text-sm ${active ? sideActiveStyles : sideTextStyles
+                }`}
             >
-              <Icon size={18} className={active ? "text-indigo-500" : "text-slate-400"} />
+              <Icon size={18} className={active ? (isPastelRole ? "text-blue-700" : "text-indigo-400") : isPastelRole ? "text-slate-500" : "text-slate-400"} />
               {item.label}
             </button>
           );
@@ -106,10 +116,11 @@ export default function DashboardLayout({ children, role }) {
       </nav>
 
       {/* Logout */}
-      <div className="p-4 border-t border-slate-100">
+      <div className={`p-4 border-t ${isCaretaker ? "border-slate-800" : "border-slate-100"}`}>
         <button
           onClick={logout}
-          className="w-full flex items-center gap-3 px-4 py-3 text-rose-500 font-bold hover:bg-rose-50 rounded-2xl transition-all text-sm"
+          className={`w-full flex items-center gap-3 px-4 py-3 font-bold rounded-2xl transition-all text-sm ${isCaretaker ? "text-rose-600 hover:bg-rose-50" : "text-rose-500 hover:bg-rose-50"
+            }`}
         >
           <DoorOpen size={18} />
           Logout
@@ -119,10 +130,10 @@ export default function DashboardLayout({ children, role }) {
   );
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
+    <div className={`flex min-h-screen font-sans ${bgStyles}`}>
 
       {/* ── DESKTOP SIDEBAR (always visible ≥ md) ── */}
-      <aside className="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col fixed h-full z-20">
+      <aside className={`hidden md:flex w-64 border-r flex-col fixed h-full z-20 ${sidebarStyles}`}>
         <SidebarContent />
       </aside>
 
@@ -136,9 +147,8 @@ export default function DashboardLayout({ children, role }) {
 
       {/* ── MOBILE DRAWER ── */}
       <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-white border-r border-slate-200 flex flex-col z-40 transform transition-transform duration-300 md:hidden ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 h-full w-72 border-r flex flex-col z-40 transform transition-transform duration-300 md:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } ${sidebarStyles}`}
       >
         <SidebarContent />
       </aside>
@@ -147,24 +157,25 @@ export default function DashboardLayout({ children, role }) {
       <div className="flex-1 md:ml-64 min-w-0">
 
         {/* HEADER */}
-        <header className="h-16 md:h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-10 px-4 md:px-8 flex justify-between items-center gap-4">
+        <header className={`h-16 md:h-20 backdrop-blur-md border-b sticky top-0 z-10 px-4 md:px-8 flex justify-between items-center gap-4 ${headerStyles}`}>
 
           {/* Left: burger (mobile) + hostel name */}
           <div className="flex items-center gap-3 min-w-0">
             {/* Burger — mobile only */}
             <button
-              className="md:hidden p-2 rounded-xl hover:bg-slate-100 text-slate-600 shrink-0"
+              className={`md:hidden p-2 rounded-xl shrink-0 ${isCaretaker ? "hover:bg-slate-800 text-slate-300" : "hover:bg-slate-100 text-slate-600"}`}
               onClick={() => setSidebarOpen(true)}
             >
               <Menu size={22} />
             </button>
 
             {user?.hostelName && (
-              <h2 className="text-base md:text-xl font-black text-slate-800 tracking-tight flex items-center gap-2 truncate">
+              <h2 className={`text-base md:text-xl font-black tracking-tight flex items-center gap-2 truncate ${headerTextStyles}`}>
                 <Home size={18} className="text-indigo-400 shrink-0" />
-                <span className="truncate">{user.hostelName}</span>
-                <span className="hidden sm:inline text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600 font-bold uppercase tracking-widest shrink-0">
-                  {user.role === "student" ? "Hostel" : role}
+                <span className="truncate">{user.hostelName} {user.hostelType}</span>
+                <span className={`hidden sm:inline text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest shrink-0 ${isPastelRole ? "bg-white/50 text-blue-700" : "bg-indigo-100 text-indigo-600"
+                  }`}>
+                  {user.role === "student" ? "Student" : role}
                 </span>
               </h2>
             )}
@@ -173,15 +184,16 @@ export default function DashboardLayout({ children, role }) {
           {/* Right: profile pill */}
           <div
             onClick={() => setIsProfileModalOpen(true)}
-            className="flex items-center gap-3 bg-slate-100 px-3 py-2 rounded-2xl border border-slate-200 cursor-pointer hover:bg-slate-200 transition shrink-0"
+            className={`flex items-center gap-3 px-3 py-2 rounded-2xl border cursor-pointer transition shrink-0 ${isCaretaker ? "bg-white/40 border-blue-200 hover:bg-white/60" : "bg-slate-100 border-slate-200 hover:bg-slate-200"
+              }`}
           >
             <div className="text-right hidden sm:block">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+              <p className={`text-[10px] font-black uppercase tracking-tighter ${isCaretaker ? "text-slate-400" : "text-slate-400"}`}>
                 {user?.role === "caretaker" || user?.role === "warden"
                   ? `${role} ${user?.hostelName || ""}`.trim()
                   : role}
               </p>
-              <p className="text-sm font-bold text-slate-800">{user?.name}</p>
+              <p className={`text-sm font-bold ${headerTextStyles}`}>{user?.name}</p>
             </div>
             <div className="w-9 h-9 md:w-10 md:h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-100 text-sm">
               {user?.name?.[0]}

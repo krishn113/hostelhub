@@ -16,16 +16,15 @@ const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.use(protect);
-router.use(allowRoles("caretaker"));
 
-router.get("/students", getAllStudents);
+router.get("/students", allowRoles("caretaker", "warden"), getAllStudents);
 router.post("/upload-rooms", upload.single("file"), uploadRooms);
-router.get("/download-students", downloadStudents);
-router.get("/room-stats", getRoomStats);
+router.get("/download-students", allowRoles("caretaker", "warden"), downloadStudents);
+router.get("/room-stats", allowRoles("caretaker", "warden"), getRoomStats);
 
 // New Routes for Forms
-router.get("/forms/hostel-leaving", getHostelLeavingForms);
-router.get("/forms/guesthouse", getGuestHouseForms);
+router.get("/forms/hostel-leaving", allowRoles("caretaker", "warden"), getHostelLeavingForms);
+router.get("/forms/guesthouse", allowRoles("caretaker", "warden"), getGuestHouseForms);
 
 router.patch("/forms/hostel-leaving/:id/status", updateHostelLeavingStatus);
 router.patch("/forms/guesthouse/:id/status", updateGuestHouseStatus);

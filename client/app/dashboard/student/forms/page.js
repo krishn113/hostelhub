@@ -104,9 +104,9 @@ export default function StudentForms() {
 
   const getStatusStyles = (status) => {
     switch (status) {
-      case 'Approved': return 'bg-emerald-500 text-white';
-      case 'Rejected': return 'bg-rose-500 text-white';
-      default: return 'bg-amber-400 text-white';
+      case 'Approved': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'Rejected': return 'bg-rose-50 text-rose-700 border-rose-200';
+      default: return 'bg-amber-50 text-amber-700 border-amber-200';
     }
   };
 
@@ -134,34 +134,34 @@ export default function StudentForms() {
           
           <button 
             onClick={() => setShowLeaveModal(true)}
-            className="group relative bg-white p-8 rounded-[3rem] border-2 border-slate-100 hover:border-blue-300 transition-all text-left overflow-hidden shadow-sm hover:shadow-xl"
+            className="group relative bg-white p-8 rounded-[3.5rem] border-2 border-slate-100 hover:border-blue-200 transition-all text-left overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 duration-500"
           >
             <div className="absolute -right-12 -top-12 opacity-5 group-hover:opacity-10 transition-opacity">
               <DoorOpen size={180} />
             </div>
-            <div className="p-4 bg-blue-50 text-blue-600 rounded-3xl h-fit w-fit mb-6">
+            <div className="p-4 bg-blue-50 text-blue-600 rounded-3xl h-fit w-fit mb-6 ring-8 ring-blue-50/50">
               <DoorOpen size={32}/>
             </div>
-            <h2 className="text-3xl font-black text-slate-800 tracking-tight mb-2">Hostel Leaving Form</h2>
-            <p className="text-slate-500 font-medium">Apply for temporary leave or holiday vacations.</p>
-            <div className="mt-8 text-[10px] font-black uppercase text-blue-500 tracking-widest flex items-center gap-2">
+            <h2 className="text-3xl font-black text-slate-800 tracking-tight mb-2 group-hover:text-blue-600 transition-colors">Hostel Leaving Form</h2>
+            <p className="text-slate-500 font-bold text-sm leading-relaxed">Apply for temporary leave or holiday vacations.</p>
+            <div className="mt-8 text-[10px] font-black uppercase text-blue-500 tracking-widest flex items-center gap-2 bg-blue-50 w-fit px-4 py-2 rounded-full">
               Apply Now &rarr;
             </div>
           </button>
 
           <button 
             onClick={() => setShowGuestModal(true)}
-            className="group relative bg-white p-8 rounded-[3rem] border-2 border-slate-100 hover:border-indigo-300 transition-all text-left overflow-hidden shadow-sm hover:shadow-xl"
+            className="group relative bg-white p-8 rounded-[3.5rem] border-2 border-slate-100 hover:border-indigo-200 transition-all text-left overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 duration-500"
           >
             <div className="absolute -right-12 -top-12 opacity-5 group-hover:opacity-10 transition-opacity">
               <Building2 size={180} />
             </div>
-            <div className="p-4 bg-indigo-50 text-indigo-600 rounded-3xl h-fit w-fit mb-6">
+            <div className="p-4 bg-indigo-50 text-indigo-600 rounded-3xl h-fit w-fit mb-6 ring-8 ring-indigo-50/50">
               <Building2 size={32}/>
             </div>
-            <h2 className="text-3xl font-black text-slate-800 tracking-tight mb-2">Guest House Booking</h2>
-            <p className="text-slate-500 font-medium">Reserve rooms for parents or official guests.</p>
-            <div className="mt-8 text-[10px] font-black uppercase text-indigo-500 tracking-widest flex items-center gap-2">
+            <h2 className="text-3xl font-black text-slate-800 tracking-tight mb-2 group-hover:text-indigo-600 transition-colors">Guest House Booking</h2>
+            <p className="text-slate-500 font-bold text-sm leading-relaxed">Reserve rooms for parents or official guests.</p>
+            <div className="mt-8 text-[10px] font-black uppercase text-indigo-500 tracking-widest flex items-center gap-2 bg-indigo-50 w-fit px-4 py-2 rounded-full">
               Book Room &rarr;
             </div>
           </button>
@@ -253,8 +253,8 @@ export default function StudentForms() {
                     </div>
                   ) : (
                     filteredLeaving.map((form) => (
-                      <div key={form._id} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative group hover:border-blue-100 transition-all">
-                        <div className={`absolute top-6 right-8 px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-[0.15em] shadow-sm ${getStatusStyles(form.status)}`}>
+                      <div key={form._id} className="bg-white p-8 rounded-[2.5rem] border-2 border-slate-100 shadow-sm relative group hover:border-blue-200 hover:shadow-lg transition-all duration-500">
+                        <div className={`absolute top-6 right-8 px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-[0.15em] border shadow-sm ${getStatusStyles(form.status)}`}>
                           {form.status}
                         </div>
                         

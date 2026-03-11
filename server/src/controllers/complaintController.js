@@ -16,7 +16,7 @@ export const getMyComplaints = async (req, res) => {
 export const createComplaint = async (req, res) => {
   try {
     const { title, category, description, floor } = req.body;
-    
+
     // 1. Auth Check
     if (!req.user) return res.status(401).json({ msg: "Not authorized" });
 
@@ -60,7 +60,7 @@ export const createComplaint = async (req, res) => {
 // Update your existing manageComplaint to push to the updates array
 export const manageComplaint = async (req, res) => {
   const { id } = req.params;
-  const { status, reason } = req.body; 
+  const { status, reason } = req.body;
 
   try {
     const complaint = await Complaint.findById(id);
@@ -80,7 +80,7 @@ export const manageComplaint = async (req, res) => {
     }
 
     complaint.status = status;
-    
+
     // Pushing to history array
     complaint.updates.push({
       status: status,
@@ -99,7 +99,7 @@ export const manageComplaint = async (req, res) => {
 export const getComplaints = async (req, res) => {
   try {
     if (!req.user.hostelId) {
-      return res.status(403).json({ msg: "Caretaker has no hostel assigned." });
+      return res.status(403).json({ msg: "User has no hostel assigned." });
     }
 
     // Hostel Isolation: Only fetch complaints for the caretaker's hostel

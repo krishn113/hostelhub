@@ -102,36 +102,36 @@ const [statusFilter, setStatusFilter] = useState("All");
 
       {/* 2. ANALYTICS RIBBON (The Stats You Requested) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-10 text-4xl group-hover:scale-110 transition">👥</div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Residents</p>
-          <h2 className="text-3xl font-black text-slate-800">{students.length}</h2>
+        <div className="bg-indigo-50/50 p-6 rounded-[2rem] border border-indigo-100 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 text-4xl group-hover:scale-110 transition text-indigo-600">👥</div>
+          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Total Residents</p>
+          <h2 className="text-3xl font-black text-indigo-800">{students.length}</h2>
           <p className="text-[10px] text-indigo-500 font-bold mt-2">Active Profiles</p>
         </div>
 
-        <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-10 text-4xl group-hover:scale-110 transition">✅</div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Rooms Allotted</p>
-          <h2 className="text-3xl font-black text-green-600">
+        <div className="bg-emerald-50/50 p-6 rounded-[2rem] border border-emerald-100 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 text-4xl group-hover:scale-110 transition text-emerald-600">✅</div>
+          <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Rooms Allotted</p>
+          <h2 className="text-3xl font-black text-emerald-700">
             {students.filter(s => s.roomNumber).length}
           </h2>
-          <p className="text-[10px] text-green-500 font-bold mt-2">Occupancy: {((students.filter(s => s.roomNumber).length / students.length) * 100).toFixed(1)}%</p>
+          <p className="text-[10px] text-emerald-500 font-bold mt-2">Occupancy: {((students.filter(s => s.roomNumber).length / (students.length || 1)) * 100).toFixed(1)}%</p>
         </div>
 
-        <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-10 text-4xl group-hover:scale-110 transition">⚠️</div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pending Allocation</p>
-          <h2 className="text-3xl font-black text-amber-500">
+        <div className="bg-amber-50/50 p-6 rounded-[2rem] border border-amber-100 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 text-4xl group-hover:scale-110 transition text-amber-600">⚠️</div>
+          <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1">Pending Allocation</p>
+          <h2 className="text-3xl font-black text-amber-600">
             {students.filter(s => !s.roomNumber).length}
           </h2>
           <p className="text-[10px] text-amber-500 font-bold mt-2">Awaiting Rooms</p>
         </div>
 
-        <div className="bg-indigo-900 p-6 rounded-[2rem] shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-20 text-4xl text-white group-hover:scale-110 transition">🏢</div>
-          <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-1 text-white/60">Hostel Capacity</p>
-          <h2 className="text-3xl font-black text-white">250</h2>
-          <p className="text-[10px] text-indigo-200 font-bold mt-2">Available: {250 - students.filter(s => s.roomNumber).length} Beds</p>
+        <div className="bg-blue-50/50 p-6 rounded-[2rem] border border-blue-100 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 text-4xl group-hover:scale-110 transition text-blue-600">🏢</div>
+          <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Hostel Capacity</p>
+          <h2 className="text-3xl font-black text-blue-800">250</h2>
+          <p className="text-[10px] text-blue-500 font-bold mt-2">Available: {250 - students.filter(s => s.roomNumber).length} Beds</p>
         </div>
       </div>
 
