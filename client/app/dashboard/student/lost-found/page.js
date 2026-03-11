@@ -98,9 +98,12 @@ export default function LostFoundPage() {
         {/* HEADER */}
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-5xl font-black text-slate-900 tracking-tight">Lost &amp; Found</h1>
-            <p className="text-slate-500 font-medium mt-2">Report lost items or help others find theirs</p>
-          </div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase leading-none">Lost & Found</h1>
+          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">
+            Report lost items or help others find theirs
+          </p>
+        </div>
+
           <button
             onClick={() => setShowForm(!showForm)}
             className={`${

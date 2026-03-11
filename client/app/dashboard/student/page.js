@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
 import StatsGrid from "@/components/StatsGrid";
 import API from "@/lib/api";
+import { MessageSquare, Bell, FileText, ArrowUpRight } from "lucide-react";
 import { MessageSquare, Bell, ArrowUpRight, Home, AlertCircle, BellRing, Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -109,6 +111,9 @@ export default function StudentDashboard() {
       }
     };
 
+    fetchDashboardData();
+  }, [user, activeTab]);
+
     fetchLatestNotice();
 
   }, [user]);
@@ -127,44 +132,31 @@ export default function StudentDashboard() {
   return (
 
     <DashboardLayout role="student" activeTab={activeTab} setActiveTab={setActiveTab}>
-
-      {/* HEADER */}
-
-      <div className="flex justify-between items-end mb-10">
-
-        <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">
-            Hey, {user.name?.split(" ")[0]}!
-          </h1>
-
-          <p className="text-slate-500 mt-1 font-medium italic">
-            You are currently in {user.hostelName} Hostel
-          </p>
-        </div>
-
-
-        <button
-          onClick={() => setActiveTab("complaints")}
-          className="bg-indigo-600 text-white px-6 py-3.5 rounded-[1.25rem] text-sm font-black shadow-xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all flex items-center gap-2 group"
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 md:pb-8">
+        
+        {/* HEADER SECTION - Stacked on mobile, side-by-side on md */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-8">
+          <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
+              Hey, {user.name?.split(' ')[0]}!
+            </h1>
+            <p className="text-slate-400 text-xs md:text-sm mt-0.5 font-medium">
+              You are currently in <span className="text-indigo-600 font-bold">{user.hostelName} Hostel</span>
+            </p>
+          </div>
+          
+          <button 
+            onClick={() => router.push("/dashboard/student/complaints")} 
+            className="bg-indigo-600 text-white px-6 py-3.5 rounded-[1.25rem] text-sm font-black shadow-xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all flex items-center gap-2 group"
         >
           <MessageSquare size={18} className="group-hover:rotate-12 transition-transform"/>
-          Post New Complaint
+          Post Complaint
         </button>
+        </div>
 
-      </div>
-
-
-
-      {/* MAIN CONTENT */}
-
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="space-y-8"
-      >
-
-        {/* STATS */}
+        {/* CONTENT AREA */}
+        <div className="space-y-6">
+          {/* STATS */}
 
         <motion.div variants={itemVariants}>
 
@@ -200,44 +192,27 @@ export default function StudentDashboard() {
         </motion.div>
 
 
-
-        {/* CARDS */}
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-          {/* NOTICE CARD */}
-
-          <motion.div
-            variants={itemVariants}
-            className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all relative overflow-hidden group"
-          >
-
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20">
-              <Bell size={80}/>
+          
+          {/* Cards Grid - 1 col on mobile, 2 col on md */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            
+            {/* Latest Notice Card */}
+            <div className="p-5 md:p-6 bg-white border border-slate-100 rounded-[2rem] md:rounded-3xl shadow-sm relative overflow-hidden group min-h-[160px] flex flex-col justify-between">
+              <div>
+                <h3 className="font-bold text-slate-800 text-base mb-2">Latest Notice 📢</h3>
+                <p className="text-slate-500 text-sm leading-relaxed line-clamp-3">
+                  {latestNotice ? latestNotice.title : "No recent updates for your hostel."}
+                </p>
+              </div>
+              <button 
+                onClick={() => router.push("/dashboard/student/notices")} 
+                className="mt-4 text-indigo-600 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 group-hover:gap-2 transition-all"
+              >
+                Read More <ArrowUpRight size={14} />
+              </button>
             </div>
 
-            <h3 className="font-bold text-slate-800 text-lg mb-2">
-              {latestNotice ? "Latest Notice 📢" : "No Notices Yet"}
-            </h3>
-
-            <p className="text-slate-500 text-sm leading-relaxed">
-              {latestNotice
-                ? latestNotice.title
-                : `Check back later for updates regarding the ${user.hostelName} community.`}
-            </p>
-
-            <button
-              onClick={() => router.push("/dashboard/student/notices")}
-              className="mt-4 text-indigo-600 text-xs font-black uppercase tracking-widest flex items-center gap-1 hover:underline"
-            >
-              {latestNotice ? "Read More" : "View All"} <ArrowUpRight size={14}/>
-            </button>
-
-          </motion.div>
-
-
-
-          {/* TECHNICIAN CARD */}
+            {/* TECHNICIAN CARD */}
 
           <motion.div
             variants={itemVariants}
@@ -260,41 +235,9 @@ export default function StudentDashboard() {
 
           </motion.div>
 
-
-
-          {/* PIE CHART */}
-
-          <motion.div
-            variants={itemVariants}
-            className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all"
-          >
-
-            <h3 className="font-bold text-slate-800 mb-4">
-              Complaint Overview
-            </h3>
-
-            <PieChart width={220} height={200}>
-              <Pie
-                data={issueData}
-                cx="50%"
-                cy="50%"
-                outerRadius={70}
-                dataKey="value"
-              >
-                {issueData.map((entry, index) => (
-                  <Cell key={index} fill={COLORS[index]}/>
-                ))}
-              </Pie>
-
-              <Tooltip/>
-            </PieChart>
-
-          </motion.div>
-
+          </div>
         </div>
-
-      </motion.div>
-
+      </div>
     </DashboardLayout>
   );
 }
