@@ -106,16 +106,14 @@ export default function LostFoundPage() {
 
           <button
             onClick={() => setShowForm(!showForm)}
-            className={`${
-              showForm ? "bg-rose-500" : "bg-indigo-600"
-            } text-white p-4 rounded-2xl shadow-xl transition-all hover:scale-105 flex items-center gap-2`}
+            className={`${showForm ? "bg-rose-500 hover:bg-rose-600" : "bg-indigo-600 hover:bg-indigo-700"} text-white px-8 py-4 rounded-3xl shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center gap-2 group`}
           >
             {showForm ? (
-              <X size={24} />
+              <X size={24} className="group-hover:rotate-90 transition-transform duration-500" />
             ) : (
               <>
-                <Plus size={24} />
-                <span className="font-bold pr-2">Post Item</span>
+                <Plus size={24} className="group-hover:rotate-90 transition-transform duration-500" />
+                <span className="font-black uppercase text-[10px] tracking-[0.15em]">Post Item</span>
               </>
             )}
           </button>
@@ -292,45 +290,45 @@ export default function LostFoundPage() {
                 />
 
                 {/* Main row — always visible */}
-                <div className="flex items-center gap-5 px-7 py-5 ml-3">
+                <div className="flex items-center gap-6 px-8 py-6 ml-3 relative z-10">
                   {/* Icon */}
                   <div
-                    className={`p-3 rounded-2xl shrink-0 ${
-                      p.type === "lost" ? "bg-rose-50 text-rose-500" : "bg-emerald-50 text-emerald-500"
+                    className={`p-4 rounded-[1.5rem] shrink-0 border shadow-sm ${
+                      p.type === "lost" ? "bg-rose-50 text-rose-500 border-rose-100" : "bg-emerald-50 text-emerald-500 border-emerald-100"
                     }`}
                   >
-                    {p.type === "lost" ? <AlertCircle size={22} /> : <CheckCircle2 size={22} />}
+                    {p.type === "lost" ? <AlertCircle size={24} /> : <CheckCircle2 size={24} />}
                   </div>
 
                   {/* Title + contact + posted by */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-black text-slate-900 tracking-tight truncate">
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight truncate group-hover:text-indigo-600 transition-colors">
                       {p.title}
                     </h3>
-                    <div className="flex flex-wrap items-center gap-3 mt-1">
+                    <div className="flex flex-wrap items-center gap-4 mt-1.5">
                       {p.contactNumber && (
-                        <span className="flex items-center gap-1.5 text-sm text-slate-500 font-medium">
-                          <Phone size={13} className="text-slate-400" />
+                        <span className="flex items-center gap-1.5 text-xs text-slate-500 font-bold bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+                          <Phone size={12} className="text-slate-400" />
                           {p.contactNumber}
                         </span>
                       )}
-                      <span className="text-xs text-slate-400">
-                        Posted by <span className="text-slate-600 font-semibold">{p.postedBy?.name}</span>
+                      <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest pl-1">
+                        By <span className="text-slate-800">{p.postedBy?.name?.split(' ')[0]}</span>
                       </span>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-3 shrink-0">
                     <button
                       onClick={() => setExpandedId(expandedId === p._id ? null : p._id)}
-                      className="text-indigo-500 hover:text-indigo-700 text-xs font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-indigo-50 transition-all"
+                      className="text-indigo-600 hover:text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-2xl border border-indigo-100 hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-100 transition-all duration-300"
                     >
                       {expandedId === p._id ? "Hide" : "Details"}
                     </button>
                     <button
                       onClick={() => markResolved(p._id)}
-                      className="bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 border border-slate-100 hover:border-emerald-200 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
+                      className="bg-slate-50 hover:bg-emerald-500 text-slate-400 hover:text-white border border-slate-100 hover:border-emerald-500 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 hover:shadow-lg hover:shadow-emerald-100"
                     >
                       Resolve
                     </button>
