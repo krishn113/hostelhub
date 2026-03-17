@@ -16,7 +16,7 @@ const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.use(protect);
-router.use(allowRoles("caretaker"));
+router.use(allowRoles("caretaker","warden"));
 
 router.get("/students", getAllStudents);
 router.post("/upload-rooms", upload.single("file"), uploadRooms);
