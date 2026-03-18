@@ -4,6 +4,7 @@ const navConfig = {
     { label: "Overview", icon: "📊", href: "/dashboard/caretaker" },
     { label: "Student List", icon: "👥", href: "/dashboard/caretaker/students" },
     { label: "Complaints", icon: "🛠️", href: "/dashboard/caretaker/complaints" },
+    { name: 'Schedule',icon :"📆", href: "/dashboard/caretaker/schedule" },
     { label: "Notices", icon: "📢", href: "/dashboard/caretaker/notices" },
     { label: "Forms", icon: "📝", href: "/dashboard/caretaker/forms" },
   ],

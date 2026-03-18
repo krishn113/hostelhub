@@ -1,16 +1,28 @@
+// server/src/routes/complaintRoutes.js
 import express from "express";
-import { createComplaint, getMyComplaints, manageComplaint, getComplaints } from "../controllers/complaintController.js";
-import { protect } from  "../middleware/auth.js";
-
+import { 
+  createComplaint, 
+  getMyComplaints, 
+  getComplaints, 
+  submitSlots,
+  manageComplaint,
+  getSlotStatistics,
+  sendReminder
+} from "../controllers/complaintController.js";
+import { protect, caretakerOnly } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Student routes
-router.post("/", protect, createComplaint); 
+// 1. SPECIFIC ROUTES FIRST
 router.get("/my-complaints", protect, getMyComplaints);
+router.get("/stats", protect, caretakerOnly, getSlotStatistics);
 
-// Caretaker routes
-router.get("/", protect, getComplaints);
-router.patch("/:id/manage", protect, manageComplaint);
+// 2. GENERAL ROUTES SECOND
+router.post("/", protect, createComplaint);
+router.get("/", protect, caretakerOnly, getComplaints);
 
+// 3. PARAMETER ROUTES LAST
+router.patch("/:id/submit-slots", protect, submitSlots);
+router.patch("/:id/manage", protect, caretakerOnly, manageComplaint);
+router.patch("/:id/reminder", protect, sendReminder);
 export default router;

@@ -44,7 +44,7 @@ const pdfDir = path.join(__dirname, "pdf");
 if (!fs.existsSync(pdfDir)) {
   fs.mkdirSync(pdfDir, { recursive: true });
 }
-app.use("/api/technician-visit", technicianVisitRoutes);app.use("/api/complaints", complaintRoutes);
+app.use("/api/technician-visit", technicianVisitRoutes);
 app.use("/api/complaints", complaintRoutes);
 app.use("/api/notices", noticeRoutes);
 app.use("/api/auth", authRoutes);

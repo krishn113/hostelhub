@@ -41,6 +41,7 @@ export default function DashboardLayout({ children, role }) {
       { label: "Overview", iconKey: "home", path: "/dashboard/caretaker" },
       { label: "Students Lists", iconKey: "students", path: "/dashboard/caretaker/students" },
       { label: "Complaints", iconKey: "complaints", path: "/dashboard/caretaker/complaints" },
+      { label:  "Schedule", iconKey: "calendar", path: "/dashboard/caretaker/schedule"},
       { label: "Notices", iconKey: "notices", path: "/dashboard/caretaker/notices" },
       { label: "Forms", iconKey: "forms", path: "/dashboard/caretaker/forms" },
     ],

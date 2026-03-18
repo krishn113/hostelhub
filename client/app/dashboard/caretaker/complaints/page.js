@@ -1,373 +1,214 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import API from "@/lib/api";
+import { Calendar, Trash2, CheckCircle, XCircle, Clock, AlertTriangle, Search, Filter, CheckSquare, Square } from "lucide-react";
 
-// HELPER FUNCTION: Place this OUTSIDE your component
-const getCommonSlots = (complaints) => {
-  const slotCounts = {};
-  
-  // Only look at Pending or Scheduled complaints
-  complaints
-    .filter(c => c.status === "Pending" || c.status === "Scheduled")
-    .forEach(c => {
-      // Ensure the slot exists to avoid undefined errors
-      const slot = c.preferredSlot || "Not Specified";
-      slotCounts[slot] = (slotCounts[slot] || 0) + 1;
-    });
-
-  // Convert the object { "Mon 2pm": 3 } into a sorted array [{ slot: "Mon 2pm", count: 3 }]
-  return Object.entries(slotCounts)
-    .map(([slot, count]) => ({ slot, count }))
-    .sort((a, b) => b.count - a.count);
-};
-
-export default function ComplaintDashboard() {
+export default function CaretakerDashboard() {
   const [complaints, setComplaints] = useState([]);
-  const [filter, setFilter] = useState("All");
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [proposedDate, setProposedDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStudent, setSelectedStudent] = useState(null);
-const [floorFilter, setFloorFilter] = useState("All");
-const [categoryFilter, setCategoryFilter] = useState("All");
-const [statusFilter, setStatusFilter] = useState("All"); 
-  const commonSlots = useMemo(() => getCommonSlots(complaints), [complaints]);
 
-  const updateStatus = async (id, status, data = {}) => {
-    try {
-      await API.patch(`/complaints/${id}/manage`, { action, ...data });
-      // Refresh data
-      const res = await API.get("/complaints");
-      setComplaints(res.data);
-    } catch (err) { alert("Action failed"); }
-  };
+  useEffect(() => { fetchComplaints(); }, []);
 
-const filteredComplaints = complaints.filter(c => {
-  const matchesSearch = (c.student?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        (c.description || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        (c.student?.roomNumber?.toString() || "").includes(searchQuery);
-  const matchesFloor = floorFilter === "All" || c.floor?.toString() === floorFilter;
-  const matchesCategory = categoryFilter === "All" || c.category === categoryFilter;
-  const matchesStatus = statusFilter === "All" || c.status === statusFilter;
-
-  return matchesSearch && matchesFloor && matchesCategory && matchesStatus;
-});
-useEffect(() => {
   const fetchComplaints = async () => {
     try {
-      const res = await API.get("/complaints"); // Verify this route matches your backend
+      const res = await API.get("/complaints");
       setComplaints(res.data);
-    } catch (err) {
-      console.error("Failed to fetch complaints", err);
+    } catch (err) { console.error("Fetch Error:", err); }
+  };
+
+  // --- NEW: SELECT ALL LOGIC ---
+  const filteredComplaints = complaints.filter(c => {
+    const matchesCategory = categoryFilter === "All" || c.category === categoryFilter;
+    const matchesSearch = c.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          c.student?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  })
+   .sort((a, b) => {
+    // 1. Prioritize Reminders (Pinned at top)
+    if (a.isReminderSent && !b.isReminderSent) return -1;
+    if (!a.isReminderSent && b.isReminderSent) return 1;
+
+    // 2. Then sort by Newest First
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+
+  const isAllSelected = filteredComplaints.length > 0 && 
+                        filteredComplaints.every(c => selectedIds.includes(c._id));
+
+  const handleSelectAll = () => {
+    if (isAllSelected) {
+      // Deselect only the ones currently in the filtered list
+      const filteredIds = filteredComplaints.map(c => c._id);
+      setSelectedIds(prev => prev.filter(id => !filteredIds.includes(id)));
+    } else {
+      // Add all filtered items to selection (avoiding duplicates)
+      const filteredIds = filteredComplaints.map(c => c._id);
+      setSelectedIds(prev => Array.from(new Set([...prev, ...filteredIds])));
     }
   };
-  fetchComplaints();
-}, []);
+  // -----------------------------
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Pending': return 'bg-amber-400';
-      case 'Accepted': return 'bg-blue-400';
-      case 'Scheduled': return 'bg-indigo-500';
-      case 'In Progress': return 'bg-purple-500';
-      case 'Resolved': return 'bg-green-500';
-      case 'Rejected': return 'bg-red-500';
-      default: return 'bg-slate-300';
-    }
+  const handleBulkGetSlot = async () => {
+    if (!proposedDate) return alert("Please select a date first");
+    try {
+      await Promise.all(
+        selectedIds.map(id => 
+          API.patch(`/complaints/${id}/manage`, { 
+            action: "Get Slot", 
+            proposedDate 
+          })
+        )
+      );
+      alert("Status updated to 'Get Slot' for selected items");
+      setSelectedIds([]);
+      setProposedDate("");
+      fetchComplaints();
+    } catch (err) { alert("Bulk action failed"); }
+  };
+
+  const handleReject = async (id) => {
+    const reason = prompt("Enter reason for rejection:");
+    if (!reason) return;
+    try {
+      await API.patch(`/complaints/${id}/manage`, { action: "Rejected", reason });
+      fetchComplaints();
+    } catch (err) { console.error(err); }
   };
 
   return (
-  <DashboardLayout role="caretaker">
-    <div className="p-4 md:p-8 bg-slate-50 min-h-screen font-sans">
-      
-      {/* 1. TOP ANALYSIS REPORT SECTION */}
-      <header className="mb-8">
-        <h1 className="text-3xl font-black text-slate-800 tracking-tight mb-2 uppercase italic">Maintenance Control</h1>
-        <p className="text-slate-500 font-medium mb-6">Status tracking and status management for all hostel residents.</p>
+    <DashboardLayout role="caretaker" activeTab="complaints">
+      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 bg-slate-50 min-h-screen">
+        
+        {/* Header & Bulk Actions Bar */}
+        <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 uppercase italic tracking-tighter leading-none">Maintenance Hub</h1>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2 italic">Assign work dates to groups</p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {["Electrical", "Plumbing", "Furniture", "Internet"].map((cat) => {
-            const activeStatuses = ["Pending", "Accepted", "Scheduled", "In Progress"];
-            const pendingInCat = complaints.filter(c => c.category === cat && activeStatuses.includes(c.status));
-            const affectedFloors = [...new Set(pendingInCat.map(c => c.floor))].filter(f => f != null).sort();
-
-            const colors = {
-              Electrical: { card: "bg-amber-50/50 border-amber-100", icon: "bg-amber-100 text-amber-600", badge: "bg-amber-600" },
-              Plumbing: { card: "bg-blue-50/50 border-blue-100", icon: "bg-blue-100 text-blue-600", badge: "bg-blue-600" },
-              Furniture: { card: "bg-rose-50/50 border-rose-100", icon: "bg-rose-100 text-rose-600", badge: "bg-rose-600" },
-              Internet: { card: "bg-indigo-50/50 border-indigo-100", icon: "bg-indigo-100 text-indigo-600", badge: "bg-indigo-600" }
-            }[cat] || { card: "bg-white border-slate-200", icon: "bg-slate-100 text-slate-600", badge: "bg-indigo-600" };
-
-            return (
-              <div key={cat} className={`${colors.card} p-5 rounded-[2rem] border shadow-sm hover:shadow-md transition-all duration-300`}>
-                <div className="flex justify-between items-start mb-4">
-                  <span className={`p-2 ${colors.icon} rounded-xl text-xl shadow-sm`}>
-                    {cat === "Electrical" ? "⚡" : cat === "Plumbing" ? "🚰" : cat === "Furniture" ? "🪑" : "🌐"}
-                  </span>
-                  <span className={`${colors.badge} text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-sm`}>
-                    {pendingInCat.length} ACTIVE
-                  </span>
-                </div>
-                <h3 className="font-bold text-slate-800 text-lg">{cat}</h3>
-                
-                <div className="mt-3 flex flex-wrap gap-1">
-                  {affectedFloors.length > 0 ? (
-                    affectedFloors.map(f => (
-                      <span key={f} className={`text-[9px] font-bold ${colors.icon} px-2 py-0.5 rounded-md`}>
-                        FLOOR {f}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-[9px] font-bold text-slate-400 italic opacity-70">No active issues</span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            <div className="flex flex-col gap-1">
+              <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Proposed Work Date</label>
+              <input 
+                type="date" 
+                className="bg-slate-100 border-none rounded-xl px-4 py-3 text-xs font-bold focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                value={proposedDate}
+                onChange={(e) => setProposedDate(e.target.value)}
+              />
+            </div>
+            <button 
+              onClick={handleBulkGetSlot}
+              disabled={selectedIds.length === 0 || !proposedDate}
+              className="mt-auto bg-indigo-600 disabled:bg-slate-200 disabled:text-slate-400 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] shadow-xl shadow-indigo-100 transition-all active:scale-95"
+            >
+              Get Slots ({selectedIds.length})
+            </button>
+          </div>
         </div>
-      </header>
 
-      {/* 2. MAIN COMPLAINT FEED */}
-      <div className="max-w-6xl mx-auto">
-  
-  {/* SEARCH & FILTER BAR */}
-  <div className="bg-white p-4 rounded-[2.5rem] border border-slate-200 shadow-sm mb-8 space-y-4">
-    <div className="flex flex-col md:flex-row gap-4 items-center">
-      {/* Search Input */}
-      <div className="flex-1 relative w-full">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
-        <input 
-          type="text"
-          placeholder="Search by name, room, or issue..."
-          className="w-full pl-11 pr-4 py-4 bg-slate-50 border-none rounded-[1.5rem] text-sm focus:ring-2 focus:ring-indigo-500 transition shadow-inner"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-
-      {/* Filter Dropdowns */}
-      <div className="flex flex-wrap gap-2 w-full md:w-auto">
-        <select 
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-slate-50 border-none rounded-2xl text-[10px] font-black uppercase px-6 py-4 focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm"
-        >
-          <option value="All">Status: All</option>
-          {["Pending", "Accepted", "Scheduled", "In Progress", "Resolved", "Rejected"].map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-
-        <select 
-          value={floorFilter}
-          onChange={(e) => setFloorFilter(e.target.value)}
-          className="bg-slate-50 border-none rounded-2xl text-[10px] font-black uppercase px-6 py-4 focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm"
-        >
-          <option value="All">Floor: All</option>
-          {[1,2,3,4].map(f => <option key={f} value={f.toString()}>Floor {f}</option>)}
-        </select>
-
-        <select 
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="bg-slate-50 border-none rounded-2xl text-[10px] font-black uppercase px-6 py-4 focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm"
-        >
-          <option value="All">Category: All</option>
-          {["Electrical", "Plumbing", "Furniture", "Internet", "Cleaning"].map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <div className="flex justify-between items-center mb-6 px-4">
-      <h2 className="text-xl font-bold text-slate-800">Operational Log ({filteredComplaints.length})</h2>
-      <button 
-        onClick={() => {setSearchQuery(""); setFloorFilter("All"); setCategoryFilter("All"); setStatusFilter("All");}}
-        className="text-[10px] font-black text-indigo-600 uppercase hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition"
-      >
-        Clear All Filters
-      </button>
-  </div>
-
-  {/* RENDER FILTERED COMPLAINTS */}
-  <div className="space-y-6">
-    {filteredComplaints.length > 0 ? (
-      filteredComplaints.map((item) => (
-        <div key={item._id} className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm flex flex-col md:flex-row gap-8 items-center relative overflow-hidden group hover:shadow-xl hover:border-indigo-100 transition-all duration-300">
-          
-          {/* Minimalist Status Indicator */}
-          <div className={`absolute left-0 top-0 h-full w-2 ${getStatusColor(item.status)}`} />
-
-          {/* Student Info Clickable Area */}
-          <div 
-            onClick={() => setSelectedStudent(item.student)}
-            className="w-full md:w-64 flex-shrink-0 text-center md:text-left border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0 md:pr-6 cursor-pointer group/student hover:bg-slate-50 p-3 rounded-2xl transition"
+        {/* Filters & SELECT ALL Bar */}
+        <div className="flex flex-col md:flex-row gap-4 items-center bg-white/50 p-2 rounded-3xl border border-white">
+          {/* NEW: Select All Toggle */}
+          <button 
+            onClick={handleSelectAll}
+            className={`flex items-center gap-2 px-4 py-3 rounded-2xl transition-all border ${
+              isAllSelected ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-white border-slate-100 text-slate-400 hover:border-slate-300'
+            }`}
           >
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 group-hover/student:text-indigo-600 transition">View Student Profile</p>
-            
-            <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
-               <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-lg font-black text-slate-600 border border-slate-200 shadow-sm group-hover/student:bg-indigo-600 group-hover/student:text-white transition-all">
-                  {item.student?.name?.charAt(0) || '?'}
-               </div>
-               <div className="text-left w-full overflow-hidden">
-                  <p className="text-sm font-black text-slate-800 truncate">{item.student?.name || 'Unknown'}</p>
-                  <p className="text-[10px] font-bold text-slate-500 truncate">{item.student?.email || 'No email provided'}</p>
-               </div>
-            </div>
+            {isAllSelected ? <CheckSquare size={16} /> : <Square size={16} />}
+            <span className="text-[10px] font-black uppercase tracking-widest">
+              {isAllSelected ? "Deselect All" : "Select All Visible"}
+            </span>
+          </button>
 
-            <div className="bg-slate-50 p-2 rounded-xl border border-slate-100 text-left">
-                <p className="text-[8px] font-black text-slate-400 uppercase">Room</p>
-                <p className="text-xs font-bold text-slate-700">{item.student?.roomNumber || 'N/A'}</p>
-            </div>
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+            <input 
+              type="text"
+              placeholder="Search by issue or student..."
+              className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-100 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-
-          {/* Problem Description */}
-          <div className="flex-1 w-full">
-             <div className="flex items-center gap-2 mb-3">
-                <span className="text-[10px] font-black text-indigo-600 uppercase px-3 py-1 bg-indigo-50 rounded-full border border-indigo-100">
-                  Floor {item.floor || 'Unknown'}
-                </span>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  {item.category}
-                </span>
-                <span className={`ml-auto text-[9px] font-black uppercase px-2 py-0.5 rounded-md text-white ${getStatusColor(item.status)}`}>
-                  {item.status}
-                </span>
-             </div>
-             <h3 className="text-xl font-bold text-slate-800 tracking-tight leading-snug">{item.description}</h3>
-             
-             {item.status === 'Rejected' && item.rejectionReason && (
-               <p className="mt-3 text-sm text-red-500 font-medium bg-red-50 p-3 rounded-xl border border-red-100">
-                 Reason: {item.rejectionReason}
-               </p>
-             )}
-
-             {item.status === 'Scheduled' && item.technicianDate && (
-               <p className="mt-3 text-sm text-emerald-600 font-bold bg-emerald-50 p-3 rounded-xl border border-emerald-100">
-                 📅 Scheduled for: {new Date(item.technicianDate).toDateString()}
-               </p>
-             )}
+          
+          <div className="flex gap-1 bg-slate-100 p-1 rounded-2xl overflow-x-auto no-scrollbar">
+            {["All", "Electrical", "Plumbing", "Furniture", "Internet"].map(cat => (
+              <button 
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className={`px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                  categoryFilter === cat ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* Action Buttons Layer */}
-          <div className="w-full md:w-auto flex flex-wrap justify-center gap-2">
-            {item.status === "Pending" && (
-              <>
-                <button 
-                  onClick={() => updateStatus(item._id, "Scheduled")}
-                  className="px-6 py-3 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition shadow-lg shadow-indigo-100"
-                >
-                  Schedule
-                </button>
-                <button 
-                  onClick={() => {
-                    const reason = prompt("Reason for rejection:");
-                    if(reason) updateStatus(item._id, "Rejected", { reason });
+        {/* Complaints Feed */}
+        <div className="grid gap-4">
+          {filteredComplaints.length > 0 ? (
+            filteredComplaints.map(c => (
+              <div 
+                key={c._id} 
+                className={`group bg-white p-6 rounded-[2.5rem] border-2 transition-all flex flex-col md:flex-row items-center gap-6 relative ${
+                  selectedIds.includes(c._id) ? 'border-indigo-500 bg-indigo-50/20' : 'border-transparent shadow-sm hover:border-slate-200 shadow-slate-200/50'
+                }`}
+              >
+                <input 
+                  type="checkbox"
+                  className="w-6 h-6 rounded-lg border-2 border-slate-200 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600"
+                  checked={selectedIds.includes(c._id)}
+                  onChange={(e) => {
+                    if (e.target.checked) setSelectedIds([...selectedIds, c._id]);
+                    else setSelectedIds(selectedIds.filter(id => id !== c._id));
                   }}
-                  className="px-6 py-3 bg-slate-100 text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 hover:text-red-600 transition"
-                >
-                  Reject
-                </button>
-              </>
-            )}
+                />
 
-            {item.status === "Scheduled" && (
-              <button 
-                onClick={() => updateStatus(item._id, "In Progress")}
-                className="px-6 py-3 bg-purple-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-700 transition"
-              >
-                Mark In Progress
-              </button>
-            )}
-
-            {item.status === "In Progress" && (
-              <button 
-                onClick={() => updateStatus(item._id, "Resolved")}
-                className="px-8 py-4 bg-green-600 text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-green-700 transition shadow-xl shadow-green-100"
-              >
-                Mark Resolved
-              </button>
-            )}
-
-            {(item.status === "Resolved" || item.status === "Rejected") && (
-              <div className="px-5 py-3 bg-slate-100 text-slate-400 rounded-2xl text-[9px] font-black uppercase border border-slate-200 cursor-default">
-                Case Closed
-              </div>
-            )}
-          </div>
-        </div>
-      ))
-    ) : (
-      <div className="text-center py-20 bg-white rounded-[4rem] border border-dashed border-slate-200">
-        <div className="text-5xl mb-4">📂</div>
-        <p className="text-slate-400 font-bold uppercase tracking-widest">No matching logs found</p>
-      </div>
-    )}
-  </div>
-</div>
-    </div>
-
-      {/* Student Profile Modal */}
-      {selectedStudent && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white max-w-sm w-full rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100 scale-in-center">
-            <div className="bg-indigo-600 p-8 text-center relative overflow-hidden">
-               <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-500 to-indigo-700"></div>
-               <div className="relative z-10">
-                 <div className="w-20 h-20 bg-white rounded-full mx-auto flex items-center justify-center text-3xl font-black text-indigo-600 shadow-xl border-4 border-indigo-100 mb-3">
-                   {selectedStudent.name?.charAt(0) || '?'}
-                 </div>
-                 <h2 className="text-2xl font-black text-white leading-tight">{selectedStudent.name}</h2>
-                 <p className="text-indigo-100 text-sm font-medium mt-1">Student Profile</p>
-               </div>
-            </div>
-            <div className="p-6 space-y-4">
-               <div>
-                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Room Assignment</p>
-                  <p className="text-slate-800 font-bold bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between gap-2">
-                    <span>🚪 Room {selectedStudent.roomNumber || 'N/A'}</span>
-                  </p>
-               </div>
-               <div>
-                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Contact Information</p>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2">
-                    <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                      ✉️ {selectedStudent.email || 'No email'}
-                    </p>
-                    {selectedStudent.phone && (
-                      <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                        📞 {selectedStudent.phone}
-                      </p>
+                <div className="flex-1 w-full">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-[8px] font-black uppercase px-2 py-1 bg-slate-900 text-white rounded-md tracking-tighter">{c.category}</span>
+                    {c.isUrgent && (
+                      <span className="flex items-center gap-1 text-[8px] font-black uppercase px-2 py-1 bg-rose-500 text-white rounded-md animate-pulse">
+                        <AlertTriangle size={10} /> Urgent
+                      </span>
                     )}
+                    <span className="ml-auto text-[10px] font-black text-slate-400 uppercase">Room {c.student?.roomNumber}</span>
                   </div>
-               </div>
-               <div>
-                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Academic Details</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase">Year</p>
-                      <p className="text-sm font-bold text-slate-800">{selectedStudent.year || 'N/A'}</p>
-                    </div>
-                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase">Gender</p>
-                      <p className="text-sm font-bold text-slate-800 capitalize">{selectedStudent.gender || 'N/A'}</p>
-                    </div>
-                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 col-span-2">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase">Degree</p>
-                      <p className="text-sm font-bold text-slate-800">{selectedStudent.degreeType || 'N/A'}</p>
-                    </div>
-                  </div>
-               </div>
-               <button 
-                 onClick={() => setSelectedStudent(null)}
-                 className="w-full mt-4 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition"
-               >
-                 Close Profile
-               </button>
-            </div>
-          </div>
-        </div>
-      )}
+                  
+                  <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight leading-none">{c.title}</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-2 line-clamp-1 border-l-2 border-slate-100 pl-3 italic">{c.description}</p>
+                </div>
 
-  </DashboardLayout>
+                <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6">
+                  <div className={`text-center py-2.5 px-6 rounded-xl text-[9px] font-black uppercase tracking-widest ${
+                    c.status === 'Raised' ? 'bg-amber-400 text-white' : 
+                    c.status === 'Get Slot' ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-500'
+                  }`}>
+                    {c.status}
+                  </div>
+                  <button 
+                    onClick={() => handleReject(c._id)}
+                    className="flex-1 md:w-full py-2.5 px-6 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                  >
+                    <XCircle size={16} className="mx-auto" />
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-100">
+              <p className="text-slate-400 font-black uppercase tracking-[0.2em]">No complaints match filters</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </DashboardLayout>
   );
 }
