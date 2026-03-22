@@ -3,16 +3,20 @@
 import { useEffect, useState } from "react";
 import API from "@/lib/api";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Plus, X, Search, Phone, CheckCircle2, AlertCircle, Package, Clock } from "lucide-react";
+import { Plus, X, Search, Phone, CheckCircle2, AlertCircle, Package, Clock, Image as ImageIcon, Camera } from "lucide-react";
 
 export default function LostFoundPage() {
   const [posts, setPosts] = useState([]);
   const [activeTab, setActiveTab] = useState("lost");
   const [showForm, setShowForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
   const [expandedId, setExpandedId] = useState(null);
   const [profilePhone, setProfilePhone] = useState("");
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -47,10 +51,34 @@ export default function LostFoundPage() {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsUploading(true);
     try {
-      await API.post("/student/lost-found", form);
+      const formData = new FormData();
+      formData.append("title", form.title);
+      formData.append("description", form.description);
+      formData.append("type", form.type);
+      formData.append("visibility", form.visibility);
+      formData.append("contactNumber", form.contactNumber);
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+
+      await API.post("/student/lost-found", formData);
+
       // Reset form but keep prefetched phone
       setForm({
         title: "",
@@ -59,10 +87,14 @@ export default function LostFoundPage() {
         visibility: "global",
         contactNumber: profilePhone,
       });
+      setImageFile(null);
+      setImagePreview(null);
       setShowForm(false);
       fetchPosts();
     } catch (err) {
       console.log(err);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -92,7 +124,17 @@ export default function LostFoundPage() {
         ? p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.description?.toLowerCase().includes(searchQuery.toLowerCase())
         : true
-    );
+    )
+    .filter((p) => {
+      if (!dateFilter) return true;
+      const postDate = new Date(p.createdAt);
+      const filterDate = new Date(dateFilter);
+      // We want items posted ON or AFTER the selected date
+      // Reset hours to compare only the dates
+      postDate.setHours(0, 0, 0, 0);
+      filterDate.setHours(0, 0, 0, 0);
+      return postDate >= filterDate;
+    });
 
   const lostCount = posts.filter((p) => p.type === "lost" && p.status !== "resolved").length;
   const foundCount = posts.filter((p) => p.type === "found" && p.status !== "resolved").length;
@@ -197,20 +239,51 @@ export default function LostFoundPage() {
                     Description
                   </label>
                   <textarea
-                    className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm mt-1 h-[168px] resize-none focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm mt-1 h-[140px] resize-none focus:ring-2 focus:ring-indigo-500 outline-none"
                     placeholder="Describe the item, where you lost/found it..."
                     required
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                   />
+                  
+                  {/* IMAGE UPLOAD SECTION */}
+                  <div className="mt-4">
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-2 tracking-widest block mb-2">
+                       Item Image (Optional)
+                    </label>
+                    <div className="flex items-center gap-4">
+                       {imagePreview ? (
+                         <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-indigo-100 shadow-sm group">
+                            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                            <button 
+                              type="button"
+                              onClick={() => { setImageFile(null); setImagePreview(null); }}
+                              className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                            >
+                               <X size={16} />
+                            </button>
+                         </div>
+                       ) : (
+                         <label className="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-indigo-400 hover:bg-slate-50 transition-all text-slate-400 hover:text-indigo-500 group">
+                            <Camera size={20} className="group-hover:scale-110 transition-transform" />
+                            <span className="text-[8px] font-black uppercase tracking-tighter">Choose Image</span>
+                            <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                         </label>
+                       )}
+                       <p className="text-[10px] text-slate-400 italic flex-1">
+                          Adding a photo helps people identify the item much faster. Max size 5MB.
+                       </p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all"
+                disabled={isUploading}
+                className={`w-full ${isUploading ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'} text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-indigo-100 transition-all`}
               >
-                Submit Post
+                {isUploading ? "Uploading..." : "Submit Post"}
               </button>
             </form>
           </div>
@@ -280,17 +353,33 @@ export default function LostFoundPage() {
             </button>
           </div>
 
-          {/* Right: My Posts filter + Search */}
-          <div className="flex items-center gap-3">
+          {/* Right: My Posts filter + Search + Date Filter */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+            {/* Date Filter */}
+            <div className={`flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-2xl border-2 transition-all duration-300 ${dateFilter ? 'border-indigo-400 bg-white shadow-sm' : 'border-transparent'}`}>
+               <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest leading-none">After:</span>
+               <input 
+                 type="date"
+                 value={dateFilter}
+                 onChange={(e) => setDateFilter(e.target.value)}
+                 className="bg-transparent border-none text-[11px] font-bold text-slate-700 focus:outline-none cursor-pointer w-28"
+               />
+               {dateFilter && (
+                 <button onClick={() => setDateFilter("")} className="text-slate-300 hover:text-rose-500 transition-colors shrink-0">
+                    <X size={14} strokeWidth={3} />
+                 </button>
+               )}
+            </div>
+
             {/* Search */}
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search items..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-slate-100 border-none rounded-2xl py-3 pl-10 pr-5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-52"
+                className="bg-slate-100 border-none rounded-2xl py-3 pl-10 pr-5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-full sm:w-48"
               />
             </div>
           </div>
@@ -342,9 +431,11 @@ export default function LostFoundPage() {
                           {p.contactNumber}
                         </span>
                       )}
-                      <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest pl-1">
-                        By <span className="text-slate-800">{p.postedBy?.name?.split(' ')[0]}</span>
-                      </span>
+                      {activeTab !== "mine" && (
+                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest pl-1">
+                          By <span className="text-slate-800">{p.postedBy?.name?.split(' ')[0]}</span>
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -369,10 +460,17 @@ export default function LostFoundPage() {
 
                 {/* Expanded details */}
                 {expandedId === p._id && (
-                  <div className="mx-7 mb-5 ml-10 p-5 bg-slate-50 rounded-2xl space-y-3 border border-slate-100">
-                    <p className="text-slate-600 text-sm leading-relaxed">
-                      {p.description}
-                    </p>
+                  <div className="mx-7 mb-5 ml-10 p-5 bg-slate-50 rounded-2xl space-y-4 border border-slate-100">
+                    <div className="flex flex-col md:flex-row gap-6">
+                       {p.imageUrl && (
+                         <div className="w-full md:w-48 h-48 rounded-2xl overflow-hidden border-2 border-white shadow-sm shrink-0">
+                            <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover" />
+                         </div>
+                       )}
+                       <p className="text-slate-600 text-sm leading-relaxed flex-1">
+                          {p.description}
+                       </p>
+                    </div>
                     <div className="flex flex-wrap gap-3 pt-1">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 py-1 bg-white rounded-full border border-slate-100">
                         {p.visibility === "global" ? "Global" : "Hostel only"}

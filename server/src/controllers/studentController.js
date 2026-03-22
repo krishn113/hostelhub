@@ -93,6 +93,7 @@ export const createPost = async (req, res) => {
     const post = await LostFound.create({
       title: req.body.title,
       description: req.body.description,
+      imageUrl: req.file ? req.file.path : null,
       type: req.body.type, // lost or found
       visibility: req.body.visibility, // global or hostel
       contactNumber: req.body.contactNumber,

@@ -38,7 +38,6 @@ export default function DashboardLayout({ children, role }) {
       { label: "Lost & Found", iconKey: "lostfound", path: "/dashboard/student/lost-found" },
     ],
     caretaker: [
-      { label: "Overview", iconKey: "home", path: "/dashboard/caretaker" },
       { label: "Students Lists", iconKey: "students", path: "/dashboard/caretaker/students" },
       { label: "Complaints", iconKey: "complaints", path: "/dashboard/caretaker/complaints" },
       { label:  "Schedule", iconKey: "calendar", path: "/dashboard/caretaker/schedule"},

@@ -4,6 +4,7 @@ const lostFoundSchema = new mongoose.Schema(
 {
   title: String,
   description: String,
+  imageUrl: String,
   type: { type: String, enum: ["lost","found"] },
 
   visibility: { type: String, enum: ["global","hostel"] },

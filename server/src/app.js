@@ -58,5 +58,12 @@ app.use("/api/warden", wardenRoutes);
 import guesthouseRoutes from "./routes/guestHouse.js";
 app.use("/api/guesthouse", guesthouseRoutes);
 
-// We need to implement a default error handler here
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(`[ERROR] ${err.message}`);
+  res.status(err.status || 500).json({
+    error: err.message || "An unexpected error occurred",
+  });
+});
+
 export default app;

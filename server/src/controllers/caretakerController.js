@@ -313,3 +313,51 @@ export const updateGuestHouseStatus = async (req, res) => {
     res.status(500).json({ error: "Failed to update status" });
   }
 };
+
+export const updateStudentRoom = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { roomNumber } = req.body;
+    const hostelId = req.user.hostelId;
+
+    if (!hostelId) {
+      return res.status(403).json({ msg: "No hostel assigned to this caretaker" });
+    }
+
+    if (!roomNumber) {
+      return res.status(400).json({ msg: "Room number is required" });
+    }
+
+    const roomNum = roomNumber.toString().trim();
+    // Logic: if 006 -> G else digit 1
+    const floorNum = roomNum[0] === '0' ? 'G' : roomNum[0];
+
+    // Find the user to ensure they exist
+    const user = await User.findById(studentId);
+    if (!user) {
+      return res.status(404).json({ msg: "Student not found" });
+    }
+
+    log(`[updateStudentRoom] Caretaker ${req.user.email} updating user ${user.name} (${user._id}) to room ${roomNum}, floor ${floorNum}`);
+
+    // Update the Room model (Mapping student to a room in this hostel)
+    // If the room doesn't exist, create it. If it does, update the occupant.
+    await Room.findOneAndUpdate(
+      { hostelId: hostelId, roomNumber: roomNum },
+      { studentId: user._id },
+      { upsert: true }
+    );
+
+    // Update the User model
+    await User.findByIdAndUpdate(user._id, {
+      roomNumber: roomNum,
+      floorNumber: floorNum,
+      hostelId: hostelId
+    });
+
+    res.json({ msg: "Room updated successfully", roomNumber: roomNum, floorNumber: floorNum });
+  } catch (error) {
+    console.error("Update Student Room Error:", error);
+    res.status(500).json({ msg: "Failed to update room" });
+  }
+};

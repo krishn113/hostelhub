@@ -8,7 +8,8 @@ import {
   getHostelLeavingForms,
   getGuestHouseForms,
   updateHostelLeavingStatus,
-  updateGuestHouseStatus
+  updateGuestHouseStatus,
+  updateStudentRoom
 } from "../controllers/caretakerController.js";
 import multer from "multer";
 
@@ -29,5 +30,8 @@ router.get("/forms/guesthouse", allowRoles("caretaker", "warden"), getGuestHouse
 
 router.patch("/forms/hostel-leaving/:id/status", updateHostelLeavingStatus);
 router.patch("/forms/guesthouse/:id/status", updateGuestHouseStatus);
+
+// Inline room update
+router.put("/student/:studentId/room", allowRoles("caretaker", "warden"), updateStudentRoom);
 
 export default router;

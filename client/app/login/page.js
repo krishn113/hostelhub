@@ -39,7 +39,7 @@ const handle = async () => {
       const role = profileRes.data.role;
       if (role === "admin") router.push("/dashboard/admin");
       else if (role === "warden") router.push("/dashboard/warden");
-      else if (role === "caretaker") router.push("/dashboard/caretaker");
+      else if (role === "caretaker") router.push("/dashboard/caretaker/students");
       else router.push("/dashboard/student");
 
     } catch (profileErr) {

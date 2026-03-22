@@ -132,7 +132,7 @@ export default function StudentListPage() {
               <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
               <input
                 type="text"
-                placeholder="Search by name, email, or entry number..."
+                placeholder="Search by name, email, or entry number"
                 className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-[1.5rem] text-sm focus:ring-2 focus:ring-indigo-500 transition"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
