@@ -107,6 +107,10 @@ export const signup = async (req, res) => {
     const allocation = await YearAllocation.findOne({ year, gender, degreeType });
     const hostelId = allocation ? allocation.hostelId : null;
 
+    if (!hostelId) {
+    console.warn(`Signup Warning: No hostel allocation found for ${degreeType} ${year}`);
+}
+
     const user = await User.create({
       name,
       email,
@@ -135,21 +139,32 @@ export const signup = async (req, res) => {
 };
 
 
+// FIX LOGIN: Ensure 'tv' is always a number in the token
 export const login = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) return res.status(400).json({ msg: "Invalid credentials" });
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email }); // tokenVersion is visible by default
+    
+    if (!user) return res.status(400).json({ msg: "Invalid credentials" });
 
-  const ok = await bcrypt.compare(password, user.password);
-  if (!ok) return res.status(400).json({ msg: "Invalid credentials" });
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) return res.status(400).json({ msg: "Invalid credentials" });
 
-  const token = jwt.sign(
-    { id: user._id, role: user.role, tv: user.tokenVersion },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
-  );
+    const token = jwt.sign(
+      { 
+        id: user._id, 
+        role: user.role, 
+        tv: Number(user.tokenVersion) || 0 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
-  res.json({ token, role: user.role });
+    res.json({ token, role: user.role, name: user.name });
+  } catch (err) {
+    console.error("Login Error:", err.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 export const forgotPassword = async (req, res) => {
@@ -243,17 +258,21 @@ export const updatePhone = async (req, res) => {
   }
 };
 
+// FIX GETME: Standardize the output
 export const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password").populate("hostelId", "name type");
-    if (!user) {
-      return res.status(404).json({ msg: "User not found" });
-    }
+    // req.user._id comes from the 'protect' middleware
+    const user = await User.findById(req.user._id)
+      .select("-password")
+      .populate("hostelId", "name type");
 
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    const userObj = user.toObject();
     res.json({
-      ...user.toObject(),
-      hostelName: user.hostelId ? user.hostelId.name : null,
-      hostelType: user.hostelId ? user.hostelId.type : null
+      ...userObj,
+      hostelName: user.hostelId ? user.hostelId.name : "Unassigned",
+      hostelType: user.hostelId ? user.hostelId.type : "N/A"
     });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch profile info" });

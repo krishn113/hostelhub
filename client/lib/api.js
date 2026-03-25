@@ -8,17 +8,22 @@ const api = axios.create({
 // Request interceptor
 const requestInterceptor = api.interceptors.request.use(
   (config) => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+   if (typeof window !== "undefined") {
+    // Check for "token" OR check inside the "user" object
+    let token = localStorage.getItem("token");
+    
+    if (!token) {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      token = user.token;
     }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+}
+)
 // Response interceptor
 const responseInterceptor = api.interceptors.response.use(
   (response) => response,
