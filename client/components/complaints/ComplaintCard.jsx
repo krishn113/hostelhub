@@ -153,14 +153,16 @@ const handleReminder = async (e) => {
           {activeTab === "General" ? (
             <button 
               onClick={handleUpvote}
-              disabled={hasUpvoted || isProcessing}
+              disabled={hasUpvoted || isProcessing || isResolved}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all border ${
                 hasUpvoted 
-                ? 'bg-[#001D4C] border-[#001D4C] text-white cursor-default' 
-                : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-slate-300 active:scale-95'
+                ? 'bg-emerald-50 border-emerald-100 text-emerald-500 cursor-not-allowed' 
+                : isResolved
+                ? 'bg-slate-100 border-slate-200 text-slate-300 cursor-not-allowed'
+                : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-slate-300 hover:text-slate-600 active:scale-95'
               }`}
             >
-              <ThumbsUp size={14} fill={hasUpvoted ? "white" : "none"} stroke={hasUpvoted ? "white" : "currentColor"} />
+              <ThumbsUp size={14} fill={hasUpvoted ? "currentColor" : "none"} stroke="currentColor" />
               <span className="text-[10px] font-black">{votes}</span>
             </button>
           ) : (

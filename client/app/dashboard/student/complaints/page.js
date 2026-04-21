@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect, useMemo } from "react"; // Added useMemo import
+import { useState, useEffect, useMemo } from "react";
+import { useAuth } from "../../../../context/AuthContext";
 import { Search } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import HubHeader from "@/components/complaints/HubHeader.jsx";
@@ -18,7 +19,7 @@ export default function StudentComplaintsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Issues");
   const [selectedDate, setSelectedDate] = useState("");
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
 
   // --- DATA FETCHING ---
   const fetchComplaints = async () => {
@@ -34,10 +35,6 @@ export default function StudentComplaintsPage() {
   };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
     fetchComplaints();
   }, []);
 
