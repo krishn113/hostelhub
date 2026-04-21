@@ -121,27 +121,27 @@ export default function StudentListPage() {
 
   return (
     <DashboardLayout role="caretaker">
-      <div className="p-4 md:p-8 min-h-screen" style={{ background: "linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%)" }}>
+      <div className="p-3 md:p-8 min-h-screen" style={{ background: "linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%)" }}>
 
         {/* 1. TOP HEADER & PRIMARY ACTIONS */}
-        <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <header className="mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black tracking-tight" style={{ background: "linear-gradient(90deg, #4f46e5, #7c3aed)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            <h1 className="text-2xl md:text-3xl font-black tracking-tight" style={{ background: "linear-gradient(90deg, #4f46e5, #7c3aed)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
               Resident Hub
             </h1>
-            <p className="text-slate-500 font-semibold mt-1">Manage allocations and analyze hostel occupancy.</p>
+            <p className="text-slate-500 text-xs md:text-sm font-semibold mt-1">Manage allocations and analyze hostel occupancy.</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-row gap-2 w-full lg:w-auto">
             <button
               onClick={handleDownload}
-              className="flex items-center gap-2 bg-white border-2 border-slate-200 text-slate-600 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-all shadow-sm"
+              className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-white border-2 border-slate-200 text-slate-600 px-3 md:px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-indigo-300 transition-all shadow-sm"
             >
               📥 Export List
             </button>
             <input type="file" ref={fileInputRef} onChange={handleExcelUpload} className="hidden" accept=".xlsx, .xls" />
             <button
               onClick={() => fileInputRef.current.click()}
-              className="flex items-center gap-2 text-white px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg hover:scale-105 active:scale-95"
+              className="flex-1 lg:flex-none flex items-center justify-center gap-2 text-white px-3 md:px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95"
               style={{ background: "linear-gradient(135deg, #4f46e5, #7c3aed)" }}
             >
               📤 Upload Allocation
@@ -150,94 +150,105 @@ export default function StudentListPage() {
         </header>
 
         {/* 2. STAT CARDS — each section gets a vivid solid gradient */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {/* Total Residents — deep indigo */}
-          <div className="relative overflow-hidden rounded-3xl p-6 shadow-lg text-white" style={{ background: "linear-gradient(135deg, #4f46e5, #6366f1)" }}>
-            <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
-            <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-indigo-200 mb-1">Total Residents</p>
-            <h2 className="text-4xl font-black">{students.length}</h2>
-            <p className="text-[10px] text-indigo-200 font-bold mt-2">👥 Active Profiles</p>
-          </div>
+<div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+  
+  {/* Total Residents */}
+  <div className="relative overflow-hidden rounded-2xl p-4 shadow-md text-white" style={{ background: "linear-gradient(135deg, #4f46e5, #6366f1)" }}>
+    <div className="absolute -top-2 -right-2 w-12 h-12 rounded-full bg-white/10" />
+    <p className="text-[8px] font-black uppercase tracking-widest text-indigo-200 mb-0.5">Total</p>
+    <h2 className="text-2xl font-black leading-none">{students.length}</h2>
+    <p className="hidden xs:block text-[8px] text-indigo-100 font-bold mt-1">👥 Active</p>
+  </div>
 
-          {/* Rooms Allotted — vivid emerald */}
-          <div className="relative overflow-hidden rounded-3xl p-6 shadow-lg text-white" style={{ background: "linear-gradient(135deg, #059669, #10b981)" }}>
-            <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
-            <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-100 mb-1">Rooms Allotted</p>
-            <h2 className="text-4xl font-black">{assignedCount}</h2>
-            <p className="text-[10px] text-emerald-100 font-bold mt-2">✅ Occupancy: {((assignedCount / (students.length || 1)) * 100).toFixed(1)}%</p>
-          </div>
+  {/* Rooms Allotted */}
+  <div className="relative overflow-hidden rounded-2xl p-4 shadow-md text-white" style={{ background: "linear-gradient(135deg, #059669, #10b981)" }}>
+    <div className="absolute -top-2 -right-2 w-12 h-12 rounded-full bg-white/10" />
+    <p className="text-[8px] font-black uppercase tracking-widest text-emerald-100 mb-0.5">Allotted</p>
+    <h2 className="text-2xl font-black leading-none">{assignedCount}</h2>
+    <p className="hidden xs:block text-[8px] text-emerald-100 font-bold mt-1">✅ {((assignedCount / (students.length || 1)) * 100).toFixed(0)}%</p>
+  </div>
 
-          {/* Pending Allocation — vivid amber */}
-          <div className="relative overflow-hidden rounded-3xl p-6 shadow-lg text-white" style={{ background: "linear-gradient(135deg, #d97706, #f59e0b)" }}>
-            <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
-            <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-amber-100 mb-1">Pending Allocation</p>
-            <h2 className="text-4xl font-black">{unassignedCount}</h2>
-            <p className="text-[10px] text-amber-100 font-bold mt-2">⚠️ Awaiting Rooms</p>
-          </div>
+  {/* Pending Allocation */}
+  <div className="relative overflow-hidden rounded-2xl p-4 shadow-md text-white" style={{ background: "linear-gradient(135deg, #d97706, #f59e0b)" }}>
+    <div className="absolute -top-2 -right-2 w-12 h-12 rounded-full bg-white/10" />
+    <p className="text-[8px] font-black uppercase tracking-widest text-amber-100 mb-0.5">Pending</p>
+    <h2 className="text-2xl font-black leading-none">{unassignedCount}</h2>
+    <p className="hidden xs:block text-[8px] text-amber-100 font-bold mt-1">⚠️ Awaiting</p>
+  </div>
 
-          {/* Hostel Capacity — vivid cyan/blue */}
-          <div className="relative overflow-hidden rounded-3xl p-6 shadow-lg text-white" style={{ background: "linear-gradient(135deg, #2563eb, #0ea5e9)" }}>
-            <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
-            <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-blue-100 mb-1">Hostel Capacity</p>
-            <h2 className="text-4xl font-black">250</h2>
-            <p className="text-[10px] text-blue-100 font-bold mt-2">🏢 Available: {250 - assignedCount} Beds</p>
-          </div>
-        </div>
+  {/* Hostel Capacity */}
+  <div className="relative overflow-hidden rounded-2xl p-4 shadow-md text-white" style={{ background: "linear-gradient(135deg, #2563eb, #0ea5e9)" }}>
+    <div className="absolute -top-2 -right-2 w-12 h-12 rounded-full bg-white/10" />
+    <p className="text-[8px] font-black uppercase tracking-widest text-blue-100 mb-0.5">Capacity</p>
+    <h2 className="text-2xl font-black leading-none">250</h2>
+    <p className="hidden xs:block text-[8px] text-blue-100 font-bold mt-1">🏢 Free: {250 - assignedCount}</p>
+  </div>
+</div>
 
-        {/* 3. SEARCH & DYNAMIC FILTERS */}
-        <div className="bg-white/80 backdrop-blur-sm p-5 rounded-3xl border-2 border-indigo-100 shadow-md mb-8">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
-              <span className="absolute left-5 top-1/2 -translate-y-1/2 text-indigo-400 text-base">🔍</span>
-              <input
-                type="text"
-                placeholder="Search by name, email, or entry number"
-                className="w-full pl-12 pr-4 py-3.5 bg-indigo-50 border-2 border-transparent rounded-2xl text-sm font-medium focus:border-indigo-400 focus:bg-white focus:outline-none transition-all"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-wrap gap-2 items-center">
-              {/* Room Number Search */}
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-violet-400 text-xs">🚪</span>
-                <input
-                  type="text"
-                  placeholder="Room no."
-                  value={roomSearch}
-                  onChange={(e) => setRoomSearch(e.target.value)}
-                  className="pl-9 pr-4 py-3.5 bg-violet-50 border-2 border-transparent rounded-2xl text-[10px] font-black uppercase w-28 focus:border-violet-400 focus:bg-white focus:outline-none transition-all"
-                />
-              </div>
-              <select
-                value={floorFilter}
-                onChange={(e) => setFloorFilter(e.target.value)}
-                className="bg-emerald-50 border-2 border-transparent rounded-2xl text-[10px] font-black uppercase px-5 py-3.5 focus:border-emerald-400 focus:outline-none cursor-pointer text-emerald-700 transition-all"
-              >
-                <option value="All">All Floors</option>
-                {availableFloors.map(f => (
-                  <option key={f} value={String(f)}>
-                    {f === "G" ? "Ground Floor" : `Floor ${f}`}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-amber-50 border-2 border-transparent rounded-2xl text-[10px] font-black uppercase px-5 py-3.5 focus:border-amber-400 focus:outline-none cursor-pointer text-amber-700 transition-all"
-              >
-                <option value="All">All Status</option>
-                <option value="Assigned">Assigned</option>
-                <option value="Unassigned">Unassigned</option>
-              </select>
-            </div>
-          </div>
-        </div>
+{/* 3. SEARCH & DYNAMIC FILTERS */}
+<div className="bg-white/80 backdrop-blur-sm p-3 md:p-4 rounded-3xl border-2 border-indigo-100 shadow-md mb-8">
+  {/* Update: Changed flex-col to lg:flex-row and items-center for single-line desktop view */}
+  <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 md:gap-4">
+    
+    {/* SEARCH BAR - flex-grow ensures it takes up available space on desktop */}
+    <div className="relative flex-[1.5] min-w-0">
+      <span className="absolute left-5 top-1/2 -translate-y-1/2 text-indigo-400 text-base">🔍</span>
+      <input
+        type="text"
+        placeholder="Search by name, email, or entry number"
+        className="w-full pl-12 pr-4 py-3.5 bg-indigo-50 border-2 border-transparent rounded-2xl text-sm font-medium focus:border-indigo-400 focus:bg-white focus:outline-none transition-all"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </div>
 
+    {/* FILTERS GROUP - flex-1 for the set of buttons */}
+    <div className="flex flex-1 items-center gap-2 md:gap-3">
+      
+      {/* Room Number */}
+      <div className="relative flex-1">
+        <span className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-violet-400 text-xs">🚪</span>
+        <input
+          type="text"
+          placeholder="Room"
+          value={roomSearch}
+          onChange={(e) => setRoomSearch(e.target.value)}
+          className="w-full pl-8 md:pl-9 pr-3 py-3.5 bg-violet-50 border-2 border-transparent rounded-2xl text-[10px] font-black uppercase focus:border-violet-400 focus:bg-white focus:outline-none transition-all h-[52px]"
+        />
+      </div>
+
+      {/* Floor Filter */}
+      <div className="relative flex-1">
+        <select
+          value={floorFilter}
+          onChange={(e) => setFloorFilter(e.target.value)}
+          className="w-full appearance-none bg-emerald-50 border-2 border-transparent rounded-2xl text-[10px] font-black uppercase px-2 md:px-4 py-3.5 focus:border-emerald-400 focus:outline-none cursor-pointer text-emerald-700 transition-all text-center h-[52px]"
+        >
+          <option value="All">All Floors</option>
+          {availableFloors.map(f => (
+            <option key={f} value={String(f)}>
+              {f === "G" ? "Ground" : `Floor ${f}`}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Status Filter */}
+      <div className="relative flex-1">
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="w-full appearance-none bg-amber-50 border-2 border-transparent rounded-2xl text-[10px] font-black uppercase px-2 md:px-4 py-3.5 focus:border-amber-400 focus:outline-none cursor-pointer text-amber-700 transition-all text-center h-[52px]"
+        >
+          <option value="All">Status</option>
+          <option value="Assigned">Assigned</option>
+          <option value="Unassigned">Unassigned</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+</div>
         {/* 4. MASTER STUDENT TABLE */}
         <div className="bg-white rounded-3xl border-2 border-slate-100 shadow-xl overflow-hidden">
           {/* Table header bar */}
