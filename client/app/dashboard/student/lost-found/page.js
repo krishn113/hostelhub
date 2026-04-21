@@ -159,7 +159,7 @@ export default function LostFoundPage() {
       <div className="max-w-5xl mx-auto space-y-8 pb-20">
 
         {/* HEADER */}
-        <div className="flex justify-between items-end">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
           <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase leading-none">Lost & Found</h1>
           <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">
@@ -169,7 +169,7 @@ export default function LostFoundPage() {
 
           <button
             onClick={() => setShowForm(!showForm)}
-            className={`${showForm ? "bg-rose-500 hover:bg-rose-600" : "bg-indigo-600 hover:bg-indigo-700"} text-white px-8 py-4 rounded-3xl shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center gap-2 group`}
+            className={`${showForm ? "bg-rose-500 hover:bg-rose-600" : "bg-indigo-600 hover:bg-indigo-700"} w-full sm:w-auto justify-center text-white px-8 py-4 rounded-3xl shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center gap-2 group`}
           >
             {showForm ? (
               <X size={24} className="group-hover:rotate-90 transition-transform duration-500" />
@@ -184,11 +184,11 @@ export default function LostFoundPage() {
 
         {/* POST FORM */}
         {showForm && (
-          <div className="bg-white p-8 rounded-[2.5rem] border-2 border-indigo-50 shadow-xl animate-in fade-in slide-in-from-top-4 duration-300">
-            <h2 className="text-xl font-black text-slate-900 mb-6">Post an Item</h2>
+          <div className="bg-white p-5 sm:p-8 rounded-3xl sm:rounded-[2.5rem] border-2 border-indigo-50 shadow-xl animate-in fade-in slide-in-from-top-4 duration-300">
+            <h2 className="text-xl font-black text-slate-900 mb-4 sm:mb-6">Post an Item</h2>
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Type Toggle */}
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 {["lost", "found"].map((t) => (
                   <button
                     key={t}
@@ -306,10 +306,10 @@ export default function LostFoundPage() {
         {/* TABS + SEARCH */}
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           {/* Tabs */}
-          <div className="flex bg-slate-100 p-1 rounded-2xl gap-1">
+          <div className="flex bg-slate-100 p-1 rounded-2xl gap-1 w-full sm:w-auto overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveTab("lost")}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
+              className={`flex items-center justify-center min-w-[90px] sm:min-w-0 gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all ${
                 activeTab === "lost"
                   ? "bg-white text-rose-500 shadow-sm"
                   : "text-slate-400 hover:text-slate-600"
@@ -327,7 +327,7 @@ export default function LostFoundPage() {
             </button>
             <button
               onClick={() => setActiveTab("found")}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
+              className={`flex items-center justify-center min-w-[90px] sm:min-w-0 gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all ${
                 activeTab === "found"
                   ? "bg-white text-emerald-500 shadow-sm"
                   : "text-slate-400 hover:text-slate-600"
@@ -347,7 +347,7 @@ export default function LostFoundPage() {
             </button>
             <button
               onClick={() => setActiveTab("mine")}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
+              className={`flex items-center justify-center min-w-[90px] sm:min-w-0 gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all ${
                 activeTab === "mine"
                   ? "bg-indigo-600 text-white shadow-sm"
                   : "text-slate-400 hover:text-slate-600"
@@ -423,38 +423,40 @@ export default function LostFoundPage() {
                 />
 
                 {/* Main row — always visible */}
-                <div className="flex items-center gap-6 px-8 py-6 ml-3 relative z-10">
-                  {/* Icon */}
-                  <div
-                    className={`p-4 rounded-[1.5rem] shrink-0 border shadow-sm ${
-                      p.type === "lost" ? "bg-rose-50 text-rose-500 border-rose-100" : "bg-emerald-50 text-emerald-500 border-emerald-100"
-                    }`}
-                  >
-                    {p.type === "lost" ? <AlertCircle size={24} /> : <CheckCircle2 size={24} />}
-                  </div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 px-5 sm:px-8 py-5 sm:py-6 ml-1 sm:ml-3 relative z-10">
+                  <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+                    {/* Icon */}
+                    <div
+                      className={`p-3 sm:p-4 rounded-2xl sm:rounded-[1.5rem] shrink-0 border shadow-sm ${
+                        p.type === "lost" ? "bg-rose-50 text-rose-500 border-rose-100" : "bg-emerald-50 text-emerald-500 border-emerald-100"
+                      }`}
+                    >
+                      {p.type === "lost" ? <AlertCircle size={20} className="sm:w-6 sm:h-6" /> : <CheckCircle2 size={20} className="sm:w-6 sm:h-6" />}
+                    </div>
 
-                  {/* Title + contact + posted by */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-xl font-black text-slate-900 tracking-tight truncate group-hover:text-indigo-600 transition-colors">
-                      {p.title}
-                    </h3>
-                    <div className="flex flex-wrap items-center gap-4 mt-1.5">
-                      {p.contactNumber && (
-                        <span className="flex items-center gap-1.5 text-xs text-slate-500 font-bold bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
-                          <Phone size={12} className="text-slate-400" />
-                          {p.contactNumber}
-                        </span>
-                      )}
-                      {activeTab !== "mine" && (
-                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest pl-1">
-                          By <span className="text-slate-800">{p.postedBy?.name?.split(' ')[0]}</span>
-                        </span>
-                      )}
+                    {/* Title + contact + posted by */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight truncate group-hover:text-indigo-600 transition-colors">
+                        {p.title}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-1 sm:mt-1.5">
+                        {p.contactNumber && (
+                          <span className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-slate-500 font-bold bg-slate-50 px-2.5 sm:px-3 py-1 rounded-full border border-slate-100">
+                            <Phone size={10} className="sm:w-3 sm:h-3 text-slate-400" />
+                            {p.contactNumber}
+                          </span>
+                        )}
+                        {activeTab !== "mine" && (
+                          <span className="text-[9px] sm:text-[10px] text-slate-400 font-black uppercase tracking-widest pl-1">
+                            By <span className="text-slate-800">{p.postedBy?.name?.split(' ')[0]}</span>
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-[52px] sm:ml-0">
                     <button
                       onClick={() => setExpandedId(expandedId === p._id ? null : p._id)}
                       className="text-indigo-600 hover:text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-2xl border border-indigo-100 hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-100 transition-all duration-300"
@@ -474,7 +476,7 @@ export default function LostFoundPage() {
 
                 {/* Expanded details */}
                 {expandedId === p._id && (
-                  <div className="mx-7 mb-5 ml-10 p-5 bg-slate-50 rounded-2xl space-y-4 border border-slate-100">
+                  <div className="mx-4 sm:mx-7 mb-4 sm:mb-5 ml-4 sm:ml-10 p-4 sm:p-5 bg-slate-50 rounded-2xl space-y-4 border border-slate-100">
                     <div className="flex flex-col md:flex-row gap-6">
                        {p.imageUrl && (
                          <div className="w-full md:w-48 h-48 rounded-2xl overflow-hidden border-2 border-white shadow-sm shrink-0">

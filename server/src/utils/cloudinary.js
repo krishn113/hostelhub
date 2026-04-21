@@ -22,4 +22,15 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage: storage });
 
+const noticeStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'notices',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'],
+    resource_type: 'auto'
+  }
+});
+
+export const noticeUpload = multer({ storage: noticeStorage });
+
 export default upload;

@@ -17,7 +17,7 @@ export const createNotice = async (req, res) => {
             fileName: file.originalname,
             fileType: file.mimetype,
             // If storing locally, save the path. If using cloud storage, use the cloud URL.
-            url: `/uploads/${file.filename}` 
+            url: file.path 
         })) : [];
 
         // Author and Hostel are pulled from the 'auth' middleware
