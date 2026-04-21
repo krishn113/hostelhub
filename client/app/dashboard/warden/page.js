@@ -1,283 +1,160 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+
+import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
-import StatsGrid from "@/components/StatsGrid";
-import DataTable from "@/components/DataTable";
-import StatusBadge from "@/components/StatusBadge";
-import axios from "axios";
-import api from "@/lib/api";
-import Link from "next/link";
-import NoticeForm from "@/components/NoticeForm";
-import { DocumentTextIcon } from '@heroicons/react/24/outline';
+import API from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { Users, AlertCircle, Home, CheckCircle2, Navigation, MessageSquare, Megaphone, FileText } from "lucide-react";
 
-import { 
-  PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid
-} from 'recharts';
-
-export default function WardenDashboard() {
-  const [complaints, setComplaints] = useState([]);
+export default function WardenOverview() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [students, setStudents] = useState([]);
+  const [complaintStats, setComplaintStats] = useState({ active: 0, resolved: 0, total: 0 });
   const [loading, setLoading] = useState(true);
-  const [selectedComplaint, setSelectedComplaint] = useState(null); // For Modal
-  const [isNoticeModalOpen, setIsNoticeModalOpen] = useState(false);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [stats, setStats] = useState({ 
-    newComplaints: 0, 
-    resolvedComplaints: 0, 
-    activeNotices: 0, 
-    totalStudents: 0 
-  });
-  const [WardenInfo, setWardenInfo] = useState(null);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    const fetchOverviewData = async () => {
+      try {
+        const [studentRes, complaintsRes] = await Promise.all([
+          API.get("/caretaker/students"),
+          API.get("/complaints/caretaker") 
+        ]);
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const userRes = await api.get('/auth/me');
-      setWardenInfo(userRes.data);
+        if (studentRes.data) {
+          setStudents(studentRes.data.students || studentRes.data);
+        }
 
-      const [noticesRes, studentsRes, complaintsRes] = await Promise.all([
-        api.get('/notices'),
-        api.get('/caretaker/students'),
-        api.get('/complaints')
-      ]);
+        if (complaintsRes.data) {
+          const complaintsList = Array.isArray(complaintsRes.data.complaints) 
+            ? complaintsRes.data.complaints 
+            : [];
+          
+          let active = 0;
+          let resolved = 0;
+          
+          complaintsList.forEach(c => {
+             if (c.status === "Resolved" || c.status === "Rejected") resolved++;
+             else active++;
+          });
 
-      const notices = noticesRes.data || [];
-      const studentsData = studentsRes.data.students || studentsRes.data || [];
-      const complaintsData = complaintsRes.data || [];
-
-      setStats({
-        newComplaints: complaintsData.filter(c => c.status === 'Pending').length,
-        resolvedComplaints: complaintsData.filter(c => c.status === 'Resolved').length,
-        activeNotices: notices.length,
-        totalStudents: studentsData.length || 0
-      });
-
-      setComplaints(
-        complaintsData
-          .sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0,5)
-      );
-    } catch (err) {
-      console.error("Failed to fetch dashboard data:", err);
-    } finally {
-      setLoading(false);
+          setComplaintStats({
+             active, resolved, total: complaintsList.length
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch overview data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    // Only fetch if warden context is available
+    if (user?.role === "warden") {
+       fetchOverviewData();
     }
-  };
+  }, [user]);
 
-  const chartData = [
-    { name: 'Pending', value: stats.newComplaints || 0, color: '#f97316' },
-    { name: 'Resolved', value: stats.resolvedComplaints || 0, color: '#10b981' }
-  ];
+  const assignedCount = students.filter(s => s.roomNumber).length;
+  const unassignedCount = students.filter(s => !s.roomNumber).length;
 
-  const barData = [
-    { name: 'Resolved', count: stats.resolvedComplaints || 0 },
-    { name: 'Pending', count: stats.newComplaints || 0 },
-    { name: 'Notices', count: stats.activeNotices || 0 }
-  ];
-
-  const getRowColor = (category) => {
-    switch(category) {
-      case 'Urgent': return 'bg-rose-50/50';
-      case 'Academic': return 'bg-indigo-50/50';
-      case 'Maintenance': return 'bg-amber-50/50';
-      case 'Events': return 'bg-emerald-50/50';
-      default: return 'hover:bg-slate-50/50';
-    }
-  };
-
- return (
-    <DashboardLayout role="warden">
-      
-      {/* HEADER */}
-      <div className="flex justify-between items-end mb-10 animate-in fade-in slide-in-from-left-4 duration-700">
-        <div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">
-            Warden Dashboard
-          </h1>
-          <p className="text-slate-500 mt-1 font-medium italic">
-            Management hub for {WardenInfo?.hostelName || 'your hostel'}
-          </p>
-        </div>
+  return (
+    <DashboardLayout role="warden" activeTab="overview">
+      <div className="p-4 md:p-8 min-h-screen" style={{ background: "linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%)" }}>
         
-        <div className="flex gap-4">
-           <button 
-            onClick={() => setIsNoticeModalOpen(true)} 
-            className="bg-indigo-600 text-white px-6 py-3.5 rounded-[1.25rem] text-sm font-black shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 transition-all flex items-center gap-2 group"
-          >
-            Post Global Notice
-          </button>
-          <button 
-            onClick={() => setIsProfileModalOpen(true)}
-            className="p-3.5 bg-white rounded-2xl border-2 border-slate-100 hover:border-indigo-200 transition-all shadow-sm group"
-          >
-            <div className="w-6 h-6 bg-indigo-600 rounded-lg flex items-center justify-center text-[10px] font-black text-white group-hover:scale-110 transition">
-              {WardenInfo?.name?.charAt(0) || 'W'}
+        {/* Header */}
+        <header className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-black text-[#001D4C] tracking-tight mb-2">Hostel Overview</h1>
+          <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Live metrics and rapid navigation</p>
+        </header>
+
+        {loading ? (
+             <div className="flex justify-center items-center h-48">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#001D4C]"></div>
+             </div>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="bg-white p-6 rounded-[2rem] shadow-sm hover:shadow-lg transition-all border border-slate-100 flex flex-col items-center text-center group">
+                <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Users size={24} />
+                </div>
+                <h3 className="text-4xl font-black text-slate-800">{students.length}</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total Residents</p>
+              </div>
+
+              <div className="bg-white p-6 rounded-[2rem] shadow-sm hover:shadow-lg transition-all border border-slate-100 flex flex-col items-center text-center group">
+                <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Home size={24} />
+                </div>
+                <h3 className="text-4xl font-black text-slate-800">{assignedCount}</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Rooms Allocated</p>
+              </div>
+
+              <div className="bg-white p-6 rounded-[2rem] shadow-sm hover:shadow-lg transition-all border border-slate-100 flex flex-col items-center text-center group cursor-pointer" onClick={() => router.push("/dashboard/warden/complaints")}>
+                <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <AlertCircle size={24} />
+                </div>
+                <h3 className="text-4xl font-black text-slate-800">{complaintStats.active}</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Active Complaints</p>
+              </div>
+
+              <div className="bg-white p-6 rounded-[2rem] shadow-sm hover:shadow-lg transition-all border border-slate-100 flex flex-col items-center text-center group cursor-pointer" onClick={() => router.push("/dashboard/warden/complaints")}>
+                <div className="w-12 h-12 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <CheckCircle2 size={24} />
+                </div>
+                <h3 className="text-4xl font-black text-slate-800">{complaintStats.resolved}</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Resolved Issues</p>
+              </div>
             </div>
-          </button>
-        </div>
-      </div>
 
-      <StatsGrid stats={[
-        { label: "Pending Issues", value: (stats.newComplaints || 0).toString(), colorClass: "bg-orange-50/50 text-orange-700 border border-orange-200 cursor-pointer hover:bg-orange-100/50", onClick: () => window.location.href = "/dashboard/warden/complaints" },
-        { label: "Resolved", value: (stats.resolvedComplaints || 0).toString(), colorClass: "bg-emerald-50/50 text-emerald-700 border border-emerald-200" },
-        { 
-          label: "Active Notices", 
-          value: (stats.activeNotices || 0).toString(), 
-          colorClass: "bg-blue-50/50 text-blue-700 border border-blue-200 cursor-pointer hover:bg-blue-100/50 transition",
-          onClick: () => window.location.href = "/dashboard/warden/notices" 
-        },
-        { label: "Total Residents", value: (stats.totalStudents || 0).toString(), colorClass: "bg-indigo-50/50 text-indigo-700 border border-indigo-200 cursor-pointer hover:bg-indigo-100/50", onClick: () => window.location.href = "/dashboard/warden/students" },
-      ]} />
+            {/* Warning Panel for Unassigned Students */}
+            {unassignedCount > 0 && (
+              <div className="bg-rose-50 border-2 border-rose-100 p-6 rounded-[2.5rem] mb-8 flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-white text-rose-500 rounded-2xl shadow-sm">
+                    <AlertCircle size={24} />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-rose-800 text-lg uppercase tracking-tight">Allocation Pending</h3>
+                    <p className="text-rose-600 font-bold text-sm">There are {unassignedCount} students waiting for room assignment.</p>
+                  </div>
+                </div>
+                <button onClick={() => router.push("/dashboard/warden/students")} className="bg-white text-rose-600 font-black uppercase text-xs px-4 py-2 rounded-xl shadow-sm border border-rose-100 hover:bg-rose-100 transition-colors">
+                  View Students
+                </button>
+              </div>
+            )}
 
-      {/* ANALYTICS CHARTS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10 mb-10">
-        {/* COMPLAINT STATUS DONUT */}
-        <div className="bg-purple-100 backdrop-blur-md p-8 rounded-[3rem] shadow-xl shadow-purple-200/30 border border-purple-200/50 group transition-all duration-500 hover:-translate-y-1 relative overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-300/30 rounded-full blur-3xl" />
-          <div className="flex items-center justify-between mb-8 relative z-10">
-            <h3 className="text-sm font-black text-purple-700 uppercase tracking-widest">Issue Resolution</h3>
-            <span className="text-[10px] font-black text-purple-600 bg-white px-4 py-1.5 rounded-full shadow-sm border border-purple-100 uppercase tracking-tighter italic">Live Stats</span>
-          </div>
-          <div className="h-[250px] w-full relative z-10">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={chartData} cx="50%" cy="50%" innerRadius={70} outerRadius={95} paddingAngle={8} dataKey="value" stroke="none">
-                  {chartData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: '1.5rem', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }} />
-                <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontWeight: 'black', textTransform: 'uppercase', fontSize: '10px', color: '#7e22ce', letterSpacing: '0.1em' }}/>
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* RESOURCE ACTIVITY BAR */}
-        <div className="bg-purple-100 backdrop-blur-md p-8 rounded-[3rem] shadow-xl shadow-purple-200/30 border border-purple-200/50 group transition-all duration-500 hover:-translate-y-1 relative overflow-hidden">
-          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-300/30 rounded-full blur-3xl" />
-          <div className="flex items-center justify-between mb-8 relative z-10">
-            <h3 className="text-sm font-black text-purple-700 uppercase tracking-widest">Overview Activity</h3>
-            <span className="text-[10px] font-black text-purple-600 bg-white px-4 py-1.5 rounded-full shadow-sm border border-purple-100 uppercase tracking-tighter">Summary</span>
-          </div>
-          <div className="h-[250px] w-full relative z-10">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#d8b4fe" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#7e22ce' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#7e22ce' }} />
-                <Tooltip cursor={{ fill: '#f3e8ff' }} contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                <Bar dataKey="count" fill="#a855f7" radius={[10, 10, 0, 0]} barSize={40} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* RECENT COMPLAINTS TABLE */}
-      <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden mb-10">
-        <div className="px-8 py-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-          <h2 className="text-xl font-black text-slate-800 tracking-tight">Recent Active Complaints</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100">
-                <th className="px-8 py-5 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Student</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Issue</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Room</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {complaints.map((row) => (
-                <tr key={row._id} className={`group transition-colors ${getRowColor(row.category)}`}>
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-[10px] font-black text-indigo-600 border border-indigo-100">
-                        {row.studentName?.charAt(0) || 'S'}
-                      </div>
-                      <span className="font-bold text-slate-700">{row.studentName}</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-black text-slate-800 uppercase tracking-wider">{row.category}</span>
-                      <span className="text-xs text-slate-500 font-medium truncate max-w-xs">{row.description}</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">{row.student?.roomNumber || 'N/A'}</span>
-                  </td>
-                  <td className="px-8 py-5 text-right">
-                    <StatusBadge status={row.status} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
-      {/* Global Notice Form */}
-      <NoticeForm 
-        isOpen={isNoticeModalOpen} 
-        onClose={() => setIsNoticeModalOpen(false)} 
-        onSuccess={fetchDashboardData} 
-      />
-
-      {/* Warden Profile Modal */}
-      {isProfileModalOpen && WardenInfo && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white max-w-sm w-full rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100 scale-in-center">
-            <div className="bg-indigo-600 p-8 text-center relative overflow-hidden">
-               <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-500 to-indigo-700"></div>
-               <div className="relative z-10">
-                 <div className="w-20 h-20 bg-white rounded-full mx-auto flex items-center justify-center text-3xl font-black text-indigo-600 shadow-xl border-4 border-indigo-100 mb-3">
-                   {WardenInfo.name?.charAt(0) || 'C'}
-                 </div>
-                 <h2 className="text-2xl font-black text-white leading-tight">{WardenInfo.name}</h2>
-                 <p className="text-indigo-100 text-sm font-medium mt-1">Official Warden</p>
+            {/* Quick Actions */}
+            <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+               <h2 className="text-xl font-black text-[#001D4C] uppercase tracking-tight mb-6 flex items-center gap-2">
+                 <Navigation size={20} /> Quick Navigation
+               </h2>
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <button onClick={() => router.push("/dashboard/warden/students")} className="p-6 rounded-3xl bg-indigo-50 border border-transparent hover:border-indigo-200 transition-all flex flex-col items-center text-center gap-3 shadow-sm hover:shadow-md transform hover:-translate-y-1">
+                     <Users size={28} className="text-indigo-600" />
+                     <span className="font-bold text-indigo-900">Student List</span>
+                  </button>
+                  <button onClick={() => router.push("/dashboard/warden/complaints")} className="p-6 rounded-3xl bg-amber-50 border border-transparent hover:border-amber-200 transition-all flex flex-col items-center text-center gap-3 shadow-sm hover:shadow-md transform hover:-translate-y-1">
+                     <MessageSquare size={28} className="text-amber-600" />
+                     <span className="font-bold text-amber-900">Track Complaints</span>
+                  </button>
+                  <button onClick={() => router.push("/dashboard/warden/notices")} className="p-6 rounded-3xl bg-rose-50 border border-transparent hover:border-rose-200 transition-all flex flex-col items-center text-center gap-3 shadow-sm hover:shadow-md transform hover:-translate-y-1">
+                     <Megaphone size={28} className="text-rose-600" />
+                     <span className="font-bold text-rose-900">Manage Notices</span>
+                  </button>
+                  <button onClick={() => router.push("/dashboard/warden/forms")} className="p-6 rounded-3xl bg-emerald-50 border border-transparent hover:border-emerald-200 transition-all flex flex-col items-center text-center gap-3 shadow-sm hover:shadow-md transform hover:-translate-y-1">
+                     <FileText size={28} className="text-emerald-600" />
+                     <span className="font-bold text-emerald-900">Hostel Forms</span>
+                  </button>
                </div>
             </div>
-            <div className="p-6 space-y-4">
-               <div>
-                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Assigned Hostel</p>
-                  <p className="text-slate-800 font-bold bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between gap-2">
-                    <span>🏠 {WardenInfo.hostelName || 'Unassigned'}</span>
-                    {WardenInfo.hostelType && (
-                      <span className="text-[9px] font-black uppercase tracking-widest bg-indigo-100 text-indigo-600 px-2 py-1 rounded-md">
-                        {WardenInfo.hostelType} Hostel
-                      </span>
-                    )}
-                  </p>
-               </div>
-               <div>
-                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Email Address</p>
-                  <p className="text-slate-800 font-bold bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    ✉️ {WardenInfo.email}
-                  </p>
-               </div>
-               {WardenInfo.phone && (
-                 <div>
-                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Phone Number</p>
-                    <p className="text-slate-800 font-bold bg-slate-50 p-3 rounded-xl border border-slate-100">
-                      📞 {WardenInfo.phone}
-                    </p>
-                 </div>
-               )}
-               <button 
-                 onClick={() => setIsProfileModalOpen(false)}
-                 className="w-full mt-4 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition"
-               >
-                 Close Profile
-               </button>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </DashboardLayout>
   );
 }

@@ -8,7 +8,8 @@ export default function CaretakerComplaintCard({
   isSelected, 
   onSelect, 
   onStudentClick, 
-  onUpdate 
+  onUpdate,
+  isWarden
 }) {
   const [isResolving, setIsResolving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
@@ -76,7 +77,7 @@ const isReminded = lastReminded && !isInactive;
       {/* 1. COMPACT HEADER */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex gap-3 items-center">
-          {!isResolved && (
+          {!isResolved && !isWarden && (
             <input 
               type="checkbox" 
               checked={isSelected}
@@ -183,7 +184,7 @@ const isReminded = lastReminded && !isInactive;
               </div>
             </div>
 
-            {!isInactive && (
+            {!isInactive && !isWarden && (
               <div className="flex items-center gap-2">
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsRejecting(true); }}

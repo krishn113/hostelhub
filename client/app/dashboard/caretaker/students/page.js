@@ -1,9 +1,13 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
 import API from "@/lib/api";
 
 export default function StudentListPage() {
+  const { user } = useAuth();
+  const isWarden = user?.role === "warden";
   const [students, setStudents] = useState([]);
   const [stats, setStats] = useState({ totalStudents: 0, occupiedRooms: 0, emptyRooms: 0 });
   const [loading, setLoading] = useState(true);
@@ -138,11 +142,13 @@ export default function StudentListPage() {
             >
               📥 Export List
             </button>
-            <input type="file" ref={fileInputRef} onChange={handleExcelUpload} className="hidden" accept=".xlsx, .xls" />
+            <input type="file" ref={fileInputRef} onChange={handleExcelUpload} className="hidden" accept=".xlsx, .xls" disabled={isWarden} />
             <button
-              onClick={() => fileInputRef.current.click()}
-              className="flex-1 lg:flex-none flex items-center justify-center gap-2 text-white px-3 md:px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95"
-              style={{ background: "linear-gradient(135deg, #4f46e5, #7c3aed)" }}
+              onClick={() => !isWarden && fileInputRef.current.click()}
+              disabled={isWarden}
+              className={`flex-1 lg:flex-none flex items-center justify-center gap-2 text-white px-3 md:px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg ${isWarden ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
+              style={{ background: isWarden ? "#9ca3af" : "linear-gradient(135deg, #4f46e5, #7c3aed)" }}
+              title={isWarden ? "Wardens cannot upload allocation" : "Upload Allocation"}
             >
               📤 Upload Allocation
             </button>

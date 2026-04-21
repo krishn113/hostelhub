@@ -14,7 +14,8 @@ export default function CaretakerHubHeader({
   selectedDate, 
   setSelectedDate, 
   onClearSelection,
-  onGetSlots
+  onGetSlots,
+  isWarden
 }) {
   const dateInputRef = useRef(null);
   const isActionable = selectedCount > 0;
@@ -62,14 +63,16 @@ export default function CaretakerHubHeader({
       {/* GROUP A: Checkbox & Search (Primary Focus) */}
       <div className="flex flex-1 items-center gap-2 md:gap-3">
         {/* Select All */}
-        <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-slate-50 flex items-center justify-center min-w-[48px] md:min-w-[56px] h-[52px]">
-          <input 
-            type="checkbox" 
-            checked={isAllSelected}
-            onChange={(e) => onSelectAll(e.target.checked)}
-            className="w-5 h-5 rounded border-2 border-slate-200 accent-[#001D4C] cursor-pointer" 
-          />
-        </div>
+        {!isWarden && (
+          <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-slate-50 flex items-center justify-center min-w-[48px] md:min-w-[56px] h-[52px]">
+            <input 
+              type="checkbox" 
+              checked={isAllSelected}
+              onChange={(e) => onSelectAll(e.target.checked)}
+              className="w-5 h-5 rounded border-2 border-slate-200 accent-[#001D4C] cursor-pointer" 
+            />
+          </div>
+        )}
 
         {/* Search */}
         <div className="relative flex-1 min-w-0 lg:min-w-[200px]">
@@ -115,32 +118,36 @@ export default function CaretakerHubHeader({
         </div>
 
         {/* Date Picker */}
-        <div className="relative flex-1 min-w-[140px]">
-          <button 
-            type="button"
-            onClick={handleDateButtonClick}
-            disabled={!isActionable}
-            className={`w-full h-[52px] px-4 rounded-2xl shadow-sm border flex items-center justify-center gap-2 transition-all ${
-              !isActionable ? 'opacity-30 cursor-not-allowed bg-slate-50 border-slate-100' :
-              selectedDate ? 'bg-[#001D4C] text-white' : 'bg-white border-slate-200 text-[#001D4C]'
-            }`}
-          >
-            <Calendar size={16} />
-            <span className="text-[10px] font-bold uppercase truncate">
-              {selectedDate ? new Date(selectedDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Date'}
-            </span>
-          </button>
-          <input type="date" ref={dateInputRef} value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="hidden" />
-        </div>
+        {!isWarden && (
+          <div className="relative flex-1 min-w-[140px]">
+            <button 
+              type="button"
+              onClick={handleDateButtonClick}
+              disabled={!isActionable}
+              className={`w-full h-[52px] px-4 rounded-2xl shadow-sm border flex items-center justify-center gap-2 transition-all ${
+                !isActionable ? 'opacity-30 cursor-not-allowed bg-slate-50 border-slate-100' :
+                selectedDate ? 'bg-[#001D4C] text-white' : 'bg-white border-slate-200 text-[#001D4C]'
+              }`}
+            >
+              <Calendar size={16} />
+              <span className="text-[10px] font-bold uppercase truncate">
+                {selectedDate ? new Date(selectedDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Date'}
+              </span>
+            </button>
+            <input type="date" ref={dateInputRef} value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="hidden" />
+          </div>
+        )}
 
         {/* Submit Action */}
-        <button 
-          onClick={onGetSlots}
-          disabled={!selectedDate || !isActionable}
-          className="flex-[1.2] bg-[#001D4C] text-white px-4 h-[52px] rounded-2xl font-bold text-[10px] uppercase tracking-wider shadow-lg hover:brightness-110 active:scale-95 transition-all disabled:opacity-30 shrink-0"
-        >
-          Get Slots {selectedCount > 0 && `(${selectedCount})`}
-        </button>
+        {!isWarden && (
+          <button 
+            onClick={onGetSlots}
+            disabled={!selectedDate || !isActionable}
+            className="flex-[1.2] bg-[#001D4C] text-white px-4 h-[52px] rounded-2xl font-bold text-[10px] uppercase tracking-wider shadow-lg hover:brightness-110 active:scale-95 transition-all disabled:opacity-30 shrink-0"
+          >
+            Get Slots {selectedCount > 0 && `(${selectedCount})`}
+          </button>
+        )}
 
         {/* Global Reset - Becomes an icon-button on desktop to save space */}
         {showGlobalReset && (

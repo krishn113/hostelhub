@@ -202,7 +202,7 @@ export default function DashboardLayout({ children, role }) {
                 <span className="truncate">{user.hostelName} {user.hostelType}</span>
                 <span className={`hidden sm:inline text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest shrink-0 ${isPastelRole ? "bg-white/50 text-blue-700" : "bg-indigo-100 text-indigo-600"
                   }`}>
-                  {user.role === "student" ? "Student" : role}
+                  {user?.role}
                 </span>
               </h2>
             )}
@@ -229,8 +229,8 @@ export default function DashboardLayout({ children, role }) {
             <div className="text-right hidden sm:block">
               <p className={`text-[10px] font-black uppercase tracking-tighter ${isCaretaker ? "text-slate-400" : "text-slate-400"}`}>
                 {user?.role === "caretaker" || user?.role === "warden"
-                  ? `${role} ${user?.hostelName || ""}`.trim()
-                  : role}
+                  ? `${user?.role} ${user?.hostelName || ""}`.trim()
+                  : user?.role}
               </p>
               <p className={`text-sm font-bold ${headerTextStyles}`}>{user?.name}</p>
             </div>
@@ -244,8 +244,8 @@ export default function DashboardLayout({ children, role }) {
               <div className="text-right hidden sm:block">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
                   {user?.role === "caretaker" || user?.role === "warden"
-                    ? `${role} ${user?.hostelName || ""}`.trim()
-                    : role}
+                    ? `${user?.role} ${user?.hostelName || ""}`.trim()
+                    : user?.role}
                 </p>
                 <p className="text-sm font-bold text-slate-800">{user?.name}</p>
               </div>

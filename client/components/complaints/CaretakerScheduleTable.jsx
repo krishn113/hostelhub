@@ -8,7 +8,7 @@ const DAY_END_MIN = 18 * 60;  // 6:00 PM
 const TOTAL_MINS = DAY_END_MIN - DAY_START_MIN;
 const SLOT_DURATION = 30; // 30 mins
 
-export default function CaretakerScheduleTable({ complaints, onUpdate, selectedDate, onStudentClick }) {
+export default function CaretakerScheduleTable({ complaints, onUpdate, selectedDate, onStudentClick, isWarden }) {
   const [hoverData, setHoverData] = useState({ id: null, startMin: 0, xPercent: 0, isValid: false });
 
   const timeToMin = (timeStr) => {
@@ -141,10 +141,10 @@ export default function CaretakerScheduleTable({ complaints, onUpdate, selectedD
                   </div>
 
                   <div 
-                    className={`relative h-10 bg-slate-100/40 rounded-xl border border-slate-100 overflow-hidden group ${c.status === 'Scheduled' ? 'cursor-default' : 'cursor-none'}`}
-                    onMouseMove={(e) => handleMouseMove(e, c)}
-                    onMouseLeave={() => setHoverData({ id: null, startMin: 0, xPercent: 0, isValid: false })}
-                    onClick={() => c.status !== "Scheduled" && handleFinalize(c._id, hoverData.startMin, hoverData.isValid)}
+                    className={`relative h-10 bg-slate-100/40 rounded-xl border border-slate-100 overflow-hidden group ${c.status === 'Scheduled' || isWarden ? 'cursor-default' : 'cursor-none'}`}
+                    onMouseMove={(e) => !isWarden && handleMouseMove(e, c)}
+                    onMouseLeave={() => !isWarden && setHoverData({ id: null, startMin: 0, xPercent: 0, isValid: false })}
+                    onClick={() => !isWarden && c.status !== "Scheduled" && handleFinalize(c._id, hoverData.startMin, hoverData.isValid)}
                   >
                     {c.freeSlots?.map((slot, i) => {
                       const start = timeToMin(slot.startTime) - DAY_START_MIN;
@@ -178,12 +178,14 @@ export default function CaretakerScheduleTable({ complaints, onUpdate, selectedD
                           width: `${(SLOT_DURATION/TOTAL_MINS) * 100}%` 
                         }}
                       >
-                        <button 
-                          onClick={(e) => handleUnlock(e, c._id)}
-                          className="absolute -top-1 -right-1 bg-white text-[#001D4C] rounded-full p-1.5 shadow-md scale-0 group-hover/slot:scale-100 transition-transform"
-                        >
-                          <Unlock size={10} />
-                        </button>
+                        {!isWarden && (
+                          <button 
+                            onClick={(e) => handleUnlock(e, c._id)}
+                            className="absolute -top-1 -right-1 bg-white text-[#001D4C] rounded-full p-1.5 shadow-md scale-0 group-hover/slot:scale-100 transition-transform"
+                          >
+                            <Unlock size={10} />
+                          </button>
+                        )}
                         <span className="text-[7px] font-black text-white">{c.scheduledVisit?.start}</span>
                         <Check size={10} className="text-white my-0.5" />
                         <span className="text-[7px] font-black text-white">{c.scheduledVisit?.end}</span>
@@ -192,7 +194,7 @@ export default function CaretakerScheduleTable({ complaints, onUpdate, selectedD
                   </div>
 
                   {/* TEXTBOX INPUT SECTION */}
-                  {c.status !== "Scheduled" && (
+                  {c.status !== "Scheduled" && !isWarden && (
                     <div className="flex items-center justify-between bg-slate-50/80 rounded-2xl p-3 border border-slate-100">
                       <div className="flex flex-wrap gap-2">
                         {c.freeSlots?.map((slot, i) => (
@@ -240,7 +242,7 @@ export default function CaretakerScheduleTable({ complaints, onUpdate, selectedD
                 </div>
 
                 <div className="flex gap-2 shrink-0">
-                  {(c.status === "Scheduled" || c.type === "General") && (
+                  {!isWarden && (c.status === "Scheduled" || c.type === "General") && (
                     <>
                       <button 
                         onClick={() => API.patch(`/complaints/${c._id}/resolve-reset`, { isResolved: true }).then(onUpdate)} 
