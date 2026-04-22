@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import { createComplaint, getMyComplaints, getCaretakerComplaints, toggleUpvote, bulkUpdateComplaints, submitStudentSlots, scheduleVisit, resolveOrReset, quickResolve, getStudentHistory, requestReschedule, deleteComplaint, sendReminder } from "../controllers/complaintController.js";
-import { protect, caretakerOnly } from "../middleware/auth.js"; // Your JWT protector
+import { protect, caretakerOnly, allowRoles } from "../middleware/auth.js"; // Your JWT protector
 import Complaint from "../models/Complaint.js";
 
 router.post("/", protect, createComplaint);
@@ -9,7 +9,7 @@ router.get("/my-complaints", protect, getMyComplaints);
 
 
 
-router.get("/caretaker", protect, caretakerOnly, getCaretakerComplaints);
+router.get("/caretaker", protect, allowRoles("caretaker", "warden"), getCaretakerComplaints);
 router.patch("/bulk-update", protect, caretakerOnly, bulkUpdateComplaints);
 
 // Add 'sendReminder' to your imports at the top
