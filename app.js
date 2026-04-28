@@ -50,10 +50,12 @@ app.use(express.json());
 // Serve static files from the 'uploads' directory
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// Create a directory for PDFs if it doesn't exist
-const pdfDir = path.join(__dirname, "pdf");
-if (!fs.existsSync(pdfDir)) {
-  fs.mkdirSync(pdfDir, { recursive: true });
+// Create a directory for PDFs if it doesn't exist (Only in local development)
+if (process.env.NODE_ENV !== "production") {
+  const pdfDir = path.join(__dirname, "pdf");
+  if (!fs.existsSync(pdfDir)) {
+    fs.mkdirSync(pdfDir, { recursive: true });
+  }
 }
 app.use("/api/technician-visit", technicianVisitRoutes);
 app.use("/api/complaints", complaintRoutes);
