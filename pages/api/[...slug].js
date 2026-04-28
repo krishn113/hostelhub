@@ -1,17 +1,14 @@
-// Next.js automatically loads .env.local into process.env for server-side code.
-// We do NOT call dotenv.config() here — that would look for .env (not .env.local)
-// and would overwrite the variables Next.js already injected.
+import serverless from "serverless-http";
 
-let appHandler = null;
+let handlerInstance = null;
 let isConnected = false;
 
-async function getApp() {
-  if (!appHandler) {
-    // Lazy import so Next.js has already populated process.env before Express reads it
+async function getHandler() {
+  if (!handlerInstance) {
     const { default: expressApp } = await import("../../app.js");
-    appHandler = expressApp;
+    handlerInstance = serverless(expressApp);
   }
-  return appHandler;
+  return handlerInstance;
 }
 
 async function ensureDB() {
@@ -23,26 +20,12 @@ async function ensureDB() {
 }
 
 export default async function handler(req, res) {
-  await ensureDB();
-  const app = await getApp();
-
-  // Hand off to Express — req.url is the full path e.g. /api/auth/login
-  // Express routes via app.use("/api/auth", authRoutes) etc.
-  return new Promise((resolve, reject) => {
-    app(req, res);
-    res.on("finish", resolve);
-    res.on("error", reject);
-  });
+  try {
+    await ensureDB();
+    const handler = await getHandler();
+    return handler(req, res);
+  } catch (err) {
+    console.error("API ERROR:", err);
+    res.status(500).json({ error: err.message });
+  }
 }
-
-export const config = {
-  api: {
-    // Let Express handle body parsing (express.json / express.urlencoded)
-    bodyParser: false,
-    // Prevents Next.js from warning about the promise resolving outside its scope
-    externalResolver: true,
-    // Allow large payloads (file uploads etc.)
-    responseLimit: false,
-  },
-};
-
