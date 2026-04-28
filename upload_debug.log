@@ -1,0 +1,10 @@
+[2026-04-28T21:18:53.427Z] [getAllStudents] Fetched 3 students for hostel 69ab0e4e6c440faeab091e3e
+[2026-04-28T21:18:53.431Z]   -> Student 4 (2023csb1169+9@iitrpr.ac.in) room: 008
+[2026-04-28T21:18:53.433Z]   -> Student 8 (2023csb1169+8@iitrpr.ac.in) room: 203
+[2026-04-28T21:18:53.434Z]   -> Student1 (2023csb1131+1@iitrpr.ac.in) room: 220
+[2026-04-28T21:18:53.435Z] [getAllStudents] Fetched 3 students for hostel 69ab0e4e6c440faeab091e3e
+[2026-04-28T21:18:53.795Z] [getAllStudents] Fetched 3 students for hostel 69ab0e4e6c440faeab091e3e
+[2026-04-28T21:18:53.797Z]   -> Student 4 (2023csb1169+9@iitrpr.ac.in) room: 008
+[2026-04-28T21:18:53.803Z]   -> Student 8 (2023csb1169+8@iitrpr.ac.in) room: 203
+[2026-04-28T21:18:53.804Z]   -> Student1 (2023csb1131+1@iitrpr.ac.in) room: 220
+[2026-04-28T21:18:53.809Z] [getAllStudents] Fetched 3 students for hostel 69ab0e4e6c440faeab091e3e
